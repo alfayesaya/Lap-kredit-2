@@ -1,116 +1,214 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Sistem Tagihan</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Live Trial Report – Handspray & Pad Print</title>
+<style>
+:root{--bg:#f4f5f7;--card:#fff;--tx:#1b1f24;--mut:#667085;--bd:#d9dde3;--ac:#1f5fd6;--ok:#16794a;--ng:#c62828;--hd:#b26a00;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14171b;--card:#1d2127;--tx:#e8eaed;--mut:#9aa3ae;--bd:#343a42;--ac:#6ea0ff;--ok:#4cc38a;--ng:#ff7b72;--hd:#e3a03a}}
+html,body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+*{box-sizing:border-box}
+header{padding:14px 16px;border-bottom:1px solid var(--bd);background:var(--card)}
+h1{font-size:17px;margin:0}header small{color:var(--mut)}
+main{max-width:980px;margin:0 auto;padding:12px}
+.tabs{display:flex;gap:6px;margin-bottom:12px}
+.tabs button{flex:1;padding:10px;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:8px;font-weight:600}
+.tabs button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:12px;margin-bottom:12px}
+.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+label{display:block;font-size:12px;color:var(--mut);margin-bottom:3px}
+input,select,textarea{width:100%;padding:9px;border:1px solid var(--bd);border-radius:7px;background:var(--bg);color:var(--tx);font:inherit}
+textarea{min-height:64px}
+h2{font-size:14px;margin:14px 0 8px}
+.btn{padding:11px 16px;border:0;border-radius:8px;background:var(--ac);color:#fff;font-weight:600;font-size:15px}
+.btn.s{background:var(--card);color:var(--tx);border:1px solid var(--bd)}
+.pill{display:inline-block;padding:1px 8px;border-radius:99px;font-size:12px;font-weight:700;border:1px solid currentColor}
+.Pass{color:var(--ok)}.Fail{color:var(--ng)}.Hold{color:var(--hd)}
+.stats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.stats div{flex:1;min-width:90px;background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:8px 10px}
+.stats b{font-size:20px;display:block}
+.it{border-top:1px solid var(--bd);padding:10px 0}.it:first-child{border-top:0}
+.it .m{color:var(--mut);font-size:12px}
+.it img{max-width:110px;max-height:80px;border-radius:6px;margin:6px 6px 0 0;border:1px solid var(--bd)}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.bar select,.bar input{width:auto;flex:1;min-width:120px}
+.warn{background:var(--card);border:1px dashed var(--hd);color:var(--hd);padding:8px 10px;border-radius:8px;margin-bottom:10px;font-size:13px}
+.hide{display:none}.chip{display:inline-block;padding:4px 10px;margin:3px 4px 0 0;border:1px solid var(--bd);border-radius:99px;background:var(--bg);color:var(--tx);font-size:13px}button.chip{cursor:pointer}table{width:100%;border-collapse:collapse;font-size:13px}td,th{border-top:1px solid var(--bd);padding:5px 6px;text-align:left;vertical-align:top}th{color:var(--mut);font-weight:600}.ov{overflow-x:auto}
+</style>
 </head>
 <body>
-  <header class="topbar">
-    <div><strong>Sistem Tagihan</strong><small> Pembayaran QR / transfer — verifikasi manual</small></div>
-    <button id="logoutBtn" class="secondary hidden">Keluar</button>
-  </header>
-  <main class="wrap">
-    <div id="notice" class="notice hidden" role="status"></div>
-    <section id="setupPanel" class="panel hidden">
-      <h1>Konfigurasi belum lengkap</h1>
-      <p>Isi URL project Supabase dan anon/publishable key di file <code>app.js</code>, lalu muat ulang halaman.</p>
-    </section>
-    <section id="authPanel" class="panel hidden">
-      <div class="tabs">
-        <button id="loginTab" class="tab active">Masuk</button>
-        <button id="registerTab" class="tab">Daftar customer</button>
-      </div>
-      <form id="loginForm">
-        <h1>Masuk</h1>
-        <label>Email<input type="email" id="loginEmail" required autocomplete="email"></label>
-        <label>Kata sandi<input type="password" id="loginPassword" required autocomplete="current-password"></label>
-        <button type="submit">Masuk</button>
-        <p><button type="button" id="forgotPasswordBtn" class="secondary">Lupa kata sandi?</button></p>
-      </form>
-      <form id="registerForm" class="hidden">
-        <h1>Daftar akun customer</h1>
-        <p class="muted">Akun baru harus disetujui admin sebelum dapat melihat tagihan.</p>
-        <label>Nama lengkap<input id="regName" required maxlength="100"></label>
-        <label>Email<input type="email" id="regEmail" required autocomplete="email"></label>
-        <label>Nomor HP (opsional)<input id="regPhone" maxlength="30"></label>
-        <label>Kata sandi (minimal 8 karakter)<input type="password" id="regPassword" required minlength="8" autocomplete="new-password"></label>
-        <button type="submit">Daftar</button>
-      </form>
-    </section>
-    <section id="recoveryPanel" class="panel hidden">
-      <h1>Buat kata sandi baru</h1>
-      <p class="muted">Masukkan kata sandi baru untuk akun aplikasi tagihan Anda.</p>
-      <form id="recoveryForm">
-        <label>Kata sandi baru (minimal 8 karakter)<input type="password" id="newPassword" required minlength="8" autocomplete="new-password"></label>
-        <label>Ulangi kata sandi baru<input type="password" id="confirmNewPassword" required minlength="8" autocomplete="new-password"></label>
-        <button type="submit">Simpan kata sandi baru</button>
-      </form>
-    </section>
-    <section id="pendingPanel" class="panel hidden">
-      <h1>Akun menunggu persetujuan</h1>
-      <p>Pendaftaran berhasil. Admin perlu menyetujui akun Anda sebelum tagihan dapat diakses.</p>
-      <button id="pendingRefresh" class="secondary">Periksa status lagi</button>
-    </section>
-    <section id="appPanel" class="hidden">
-      <div class="welcome">
-        <div><h1 id="welcomeTitle">Tagihan saya</h1><p id="welcomeText" class="muted"></p></div>
-      </div>
-      <div id="customerArea" class="hidden">
-        <section class="panel checkout-intro">
-          <p class="eyebrow">PEMBAYARAN MUDAH</p><h2>Pilih tagihan yang ingin dibayar</h2>
-          <p class="muted">Pilih tagihan, ikuti instruksi GoPay, lalu masukkan nominal dan nomor referensi transaksi. Admin memeriksa pembayaran sebelum tagihan dinyatakan lunas.</p>
-        </section>
-        <section class="panel"><h2>Tagihan saya</h2><div id="customerInvoices" class="cards"></div></section>
-        <section id="checkoutPanel" class="panel hidden">
-          <div class="checkout-head"><span class="step-chip">CHECKOUT</span><button id="checkoutCancel" type="button" class="secondary">Kembali</button></div>
-          <h2>Checkout pembayaran</h2><div class="checkout-steps"><span id="stepSummary" class="current">1. Ringkasan</span><span id="stepPay">2. Bayar</span><span id="stepConfirm">3. Konfirmasi</span></div>
-          <div id="checkoutSummary" class="checkout-summary"></div>
-          <button id="checkoutContinue" type="button" class="checkout-primary">Lanjutkan pembayaran</button>
-          <div id="checkoutPaymentStep" class="hidden"><h3>Bayar dengan GoPay</h3><p>Gunakan aplikasi GoPay untuk membayar ke tujuan berikut. Pastikan nama penerima dan nominal sudah benar.</p><div id="paymentDestination" class="payment-destination"></div><img id="qrisImage" class="qris hidden" alt="QR pembayaran"><p id="qrisMissing" class="muted">QR belum dipasang. Hubungi admin untuk memastikan nomor GoPay tujuan.</p><button id="checkoutToConfirm" type="button" class="checkout-primary">Saya sudah membayar</button></div>
-          <form id="checkoutConfirmForm" class="hidden"><h3>Konfirmasi pembayaran</h3><label>Nominal yang dibayar (Rupiah)<input id="checkoutAmount" type="number" min="1" step="1" required></label><label>Nomor referensi transaksi<input id="checkoutReference" maxlength="120" required placeholder="Nomor referensi transaksi GoPay"></label><p class="muted">Jangan masukkan PIN atau OTP. Tagihan belum lunas sampai admin menyetujui konfirmasi.</p><button type="submit" class="checkout-primary">Kirim konfirmasi</button></form>
-        </section>
-        <section class="panel">
-          <h2>Riwayat konfirmasi</h2>
-          <div id="customerSubmissions" class="cards"></div>
-        </section>
-      </div>
-      <div id="adminArea" class="hidden">
-        <section class="panel">
-          <h2>Pengaturan tujuan pembayaran</h2>
-          <p class="muted">Edit nilai di pengaturan aplikasi pada Supabase, atau ubah konstanta di app.js. Jangan memasang QR milik orang lain.</p>
-          <div id="adminDestinationPreview" class="payment-destination"></div>
-        </section>
-        <section class="panel">
-          <h2>Permintaan akun customer</h2>
-          <div id="adminCustomers" class="cards"></div>
-        </section>
-        <section class="panel">
-          <h2>Buat tagihan</h2>
-          <form id="invoiceForm" class="form-grid">
-            <label>Customer<select id="invoiceCustomer" required></select></label>
-            <label>Judul tagihan<input id="invoiceTitle" required maxlength="160" placeholder="Contoh: Tagihan Oktober 2026"></label>
-            <label>Nominal (Rupiah)<input id="invoiceAmount" type="number" min="1" step="1" required></label>
-            <label>Jatuh tempo<input id="invoiceDue" type="date" required></label>
-            <label>Catatan (opsional)<input id="invoiceNote" maxlength="500"></label>
-            <button type="submit">Buat tagihan</button>
-          </form>
-        </section>
-        <section class="panel">
-          <h2>Semua tagihan</h2>
-          <div id="adminInvoices" class="cards"></div>
-        </section>
-        <section class="panel">
-          <h2>Konfirmasi pembayaran menunggu pemeriksaan</h2>
-          <p class="muted">Cocokkan nominal, tanggal, referensi, dan dana yang benar-benar masuk ke aplikasi GoPay/bank Anda sebelum menyetujui.</p>
-          <div id="adminSubmissions" class="cards"></div>
-        </section>
-      </div>
-    </section>
-  </main>
-  <footer>Jangan pernah menganggap pembayaran lunas hanya karena customer mengirim konfirmasi.</footer>
-  <script src="app.js"></script>
+<header><h1>Live Trial Report – Handspray &amp; Pad Print</h1></header>
+<main>
+<div id="warn" class="warn hide"></div>
+<div class="tabs"><button id="t1" class="on">＋ Input Trial</button><button id="t3">Project</button><button id="t2">Data &amp; Export</button></div>
+
+<section id="v1">
+<div class="card">
+<div class="g">
+<div><label>Project</label><select id="proj"></select></div>
+<div><label>Diupdate oleh</label><select id="by"><option>Yesaya</option><option>Bintang</option><option>Qohar</option><option>Munir</option><option>Gandha</option></select></div>
+<div><label>Tanggal &amp; jam trial</label><input id="dt" type="datetime-local"></div>
+<div><label>Tahap</label><select id="stage"><option>FEP</option><option>PP2K</option><option>PP3K</option><option>Trial Lain</option></select></div>
+<div><label>Metode</label><select id="method"><option>Handspray</option><option>Pad Print</option></select></div>
+<div><label>Part</label><select id="pos"></select></div>
+<div><label>Mesin / Line</label><input id="mc" placeholder="mis. C08"></div>
+<div><label>Qty trial (pcs)</label><input id="qty" type="number" inputmode="numeric"></div>
+<div><label>Qty NG (pcs)</label><input id="ng" type="number" inputmode="numeric" value="0"></div>
+<div><label>Warna</label><select id="color"><option>OK</option><option>Revisi mixed</option></select></div>
+<div><label>Hasil</label><select id="res"><option>Pass</option><option>Fail</option><option>Hold</option></select></div>
+</div>
+<h2>Parameter aktual</h2>
+<div class="g" id="params"></div>
+<h2>Kendala</h2>
+<label>Kategori kendala (pilih dari daftar atau ketik manual)</label>
+<input id="cat" list="catl" placeholder="Pilih / ketik kendala…"><datalist id="catl"></datalist>
+<div style="margin-top:10px"><label>Detail kendala</label><textarea id="issue" placeholder="Apa yang terjadi, di part ke berapa, kondisi saat itu…"></textarea></div>
+<div style="margin-top:10px"><label>Tindakan / perbaikan</label><textarea id="act" placeholder="Apa yang sudah dilakukan"></textarea></div>
+<div style="margin-top:10px"><label>Foto (opsional, bisa lebih dari satu)</label><input id="ph_in" type="file" accept="image/*" multiple></div>
+<div style="margin-top:14px"><button class="btn" id="save">Simpan trial</button> <span id="msg" class="m"></span></div>
+</div>
+</section>
+
+<section id="v3" class="hide">
+<div class="card">
+<h2 style="margin-top:0">Project baru</h2>
+<label>Nama project</label><input id="pn" placeholder="Nama project">
+<h2>Part project ini</h2>
+<div class="bar"><input id="pp" placeholder="Ketik nama part lalu Tambah"><button class="btn s" id="padd">Tambah</button></div>
+<div id="pcur"></div>
+<h2>Daftar part dari project sebelumnya (klik untuk menambahkan)</h2>
+<div id="plib" class="m">Belum ada.</div>
+<div style="margin-top:14px"><button class="btn" id="psave">Simpan project</button> <span id="pmsg" class="m"></span></div>
+</div>
+<div class="card"><h2 style="margin-top:0">Project yang ada</h2><div id="plist"></div></div>
+</section>
+
+<section id="v2" class="hide">
+<div class="stats" id="stats"></div>
+<div class="card">
+<div class="bar">
+<select id="fp"></select>
+<select id="fm"><option value="">Semua metode</option><option>Handspray</option><option>Pad Print</option></select>
+<select id="fr"><option value="">Semua hasil</option><option>Pass</option><option>Fail</option><option>Hold</option></select>
+<input id="fq" placeholder="Cari teks…">
+</div>
+<div class="bar"><button class="btn" id="xl">Ekspor Excel (.xlsx)</button><button class="btn s" id="cs">Ekspor CSV (log)</button></div>
+</div>
+<div class="card"><h2 style="margin-top:0">Ringkasan kendala per project</h2><div class="ov" id="sum"></div></div>
+<div class="card"><h2 style="margin-top:0">Log trial</h2><div id="list"></div></div>
+<div class="card"><h2 style="margin-top:0">Foto hasil trial (per project &amp; tanggal)</h2><div id="gal"></div></div>
+</section>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+var $=function(i){return document.getElementById(i)};
+var PAR={"Handspray":["Warna cat","Din cup (detik)","Rasio cat","Spray cycle time (s)","Jarak gun ke part (cm)","Tekanan udara (MPa)","Frek. cleaning mask (pcs)","Konsumsi cat (g/pcs)"],
+"Pad Print":["Warna ink","Viskositas (KU)","Rubber head","Plate depth (mm)","Delay pick up ink (s)","Delay transfer ke part (s)","Jarak rear/front stopper (mm)","Cycle time (s)"]};
+var CATS={"Handspray":["Tidak ada kendala","Mask / jig","Kualitas cat (kasar, orange peel)","Cat bocor / bleeding","Ketebalan tidak rata","Dust / kontaminasi","Adhesion","Parameter"],
+"Pad Print":["Tidak ada kendala","Fixture longgar / posisi geser","Plate (kurang/lebih dalam)","Rubber head","Ink (viskositas / kering)","Image tidak lengkap / blur","Misalignment","Adhesion","Cycle time > target"]};
+var rows=[],projs=[],newParts=[];
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]})}
+function warn(t){$("warn").textContent=t;$("warn").classList.remove("hide")}
+function nowLocal(){var d=new Date();return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16)}
+$("dt").value=nowLocal();
+function tab(n){["1","2","3"].forEach(function(k){$("v"+k).classList.toggle("hide",k!=n);$("t"+k).className=k==n?"on":""});if(n==2)render();if(n==3)renderProj()}
+$("t1").onclick=function(){tab(1)};$("t2").onclick=function(){tab(2)};$("t3").onclick=function(){tab(3)};
+function opts(a){return a.map(function(x){return "<option>"+esc(x)+"</option>"}).join("")}
+function curProj(){var n=$("proj").value;return projs.filter(function(p){return p.name==n})[0]}
+function setParts(){var p=curProj(),own=p?p.parts:[],other=[],c=$("pos").value;projs.forEach(function(q){if(q!==p)q.parts.forEach(function(x){if(own.indexOf(x)<0&&other.indexOf(x)<0)other.push(x)})});
+ $("pos").innerHTML=(own.length?"<optgroup label=\"Part project ini\">"+opts(own)+"</optgroup>":"")+(other.length?"<optgroup label=\"Part dari project sebelumnya\">"+opts(other)+"</optgroup>":"")||"<option>(isi part di tab Project)</option>";
+ if(c&&own.concat(other).indexOf(c)>=0)$("pos").value=c}
+function setMethod(){var m=$("method").value;
+ $("params").innerHTML=PAR[m].map(function(k){return "<div><label>"+k+"</label><input data-k=\""+k+"\"></div>"}).join("");setCats()}
+function setCats(){var m=$("method").value,all=CATS[m].slice();rows.forEach(function(r){if(r.cat&&all.indexOf(r.cat)<0)all.push(r.cat)});$("catl").innerHTML=all.map(function(c){return "<option value=\""+esc(c)+"\">"}).join("")}
+function setProjSel(){var c=$("proj").value,n=projs.map(function(p){return p.name});$("proj").innerHTML=n.length?opts(n):"<option value=\"\">(buat project dulu di tab Project)</option>";if(n.indexOf(c)>=0)$("proj").value=c;setParts();
+ var f=$("fp").value;$("fp").innerHTML="<option value=\"\">Semua project</option>"+opts(n);$("fp").value=f}
+$("method").onchange=setMethod;$("proj").onchange=setParts;setMethod();
+
+var SB="https://edmylqrsinorprliaoxu.supabase.co",KEY="sb_publishable_xm8If-u4NuGkydo4ULg-hQ_wBrdEDec",BUCKET="trial-photos",last={p:"",t:""};
+function err(e){warn("Gagal terhubung ke Supabase: "+(e&&e.message?e.message.slice(0,200):e)+" — pastikan supabase-setup.sql sudah dijalankan.")}
+async function api(m,t,b,q){var r=await fetch(SB+"/rest/v1/"+t+(q||""),{method:m,headers:{apikey:KEY,"Content-Type":"application/json",Prefer:"return=minimal"},body:b?JSON.stringify(b):undefined});if(!r.ok)throw new Error(await r.text());return m=="GET"?r.json():null}
+async function upPhoto(f){var ext=(f.name.split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,""),path=Date.now()+"-"+Math.random().toString(36).slice(2,8)+"."+ext;
+ var r=await fetch(SB+"/storage/v1/object/"+BUCKET+"/"+path,{method:"POST",headers:{apikey:KEY,"Content-Type":f.type||"image/jpeg"},body:f});if(!r.ok)throw new Error(await r.text());return SB+"/storage/v1/object/public/"+BUCKET+"/"+path}
+function toT(x){return {ts:x.ts,trial_at:x.trialAt,project:x.project,by_name:x.by,stage:x.stage,method:x.method,pos:x.pos,mc:x.mc,qty:x.qty,ng:x.ng,color:x.color,res:x.res,params:x.params,cat:x.cat,issue:x.issue,act:x.act,photos:x.photos}}
+function fromT(r){return {id:r.id,ts:r.ts,trialAt:r.trial_at,project:r.project,by:r.by_name,stage:r.stage,method:r.method,pos:r.pos,mc:r.mc,qty:r.qty||0,ng:r.ng||0,color:r.color,res:r.res,params:r.params||{},cat:r.cat||"",issue:r.issue||"",act:r.act||"",photos:r.photos||[]}}
+async function loadP(){var a=await api("GET","projects",null,"?select=*&order=ts.asc"),k=JSON.stringify(a);if(k==last.p)return;last.p=k;projs=a.map(function(r){return {id:r.id,name:r.name,parts:r.parts||[],ts:r.ts}});setProjSel();renderProj()}
+async function loadT(){var a=await api("GET","trials",null,"?select=*&order=trial_at.desc"),k=JSON.stringify(a);if(k==last.t)return;last.t=k;rows=a.map(fromT);setCats();if(!$("v2").classList.contains("hide"))render()}
+function init(){var go=function(){loadP().then(loadT).catch(err)};go();setInterval(go,8000)}
+init();
+
+function libParts(){var u=[];projs.forEach(function(p){p.parts.forEach(function(x){if(u.indexOf(x)<0&&newParts.indexOf(x)<0)u.push(x)})});return u}
+function renderProj(){
+ $("pcur").innerHTML=newParts.map(function(x,i){return "<button class=\"chip\" data-i=\""+i+"\">"+esc(x)+" ✕</button>"}).join("")||"<span class=m>Belum ada part.</span>";
+ document.querySelectorAll("#pcur button").forEach(function(b){b.onclick=function(){newParts.splice(+b.dataset.i,1);renderProj()}});
+ var l=libParts();$("plib").innerHTML=l.length?l.map(function(x){return "<button class=\"chip\" data-p=\""+esc(x)+"\">＋ "+esc(x)+"</button>"}).join(""):"Belum ada.";
+ document.querySelectorAll("#plib button").forEach(function(b){b.onclick=function(){newParts.push(b.dataset.p);renderProj()}});
+ $("plist").innerHTML=projs.map(function(p){return "<div class=it><b>"+esc(p.name)+"</b><div class=m>"+esc(p.parts.join(", ")||"-")+"</div></div>"}).join("")||"<span class=m>Belum ada project.</span>"}
+$("padd").onclick=function(){var v=$("pp").value.trim();if(v&&newParts.indexOf(v)<0)newParts.push(v);$("pp").value="";renderProj()};
+$("psave").onclick=async function(){var n=$("pn").value.trim();if(!n){$("pmsg").textContent="Isi nama project.";return}
+ if(projs.some(function(p){return p.name.toLowerCase()==n.toLowerCase()})){$("pmsg").textContent="Nama project sudah ada.";return}
+ var p={name:n,parts:newParts.slice(),ts:Date.now()};
+ try{await api("POST","projects",p);last.p="";await loadP();
+  $("proj").value=n;setParts();$("pn").value="";newParts=[];$("pmsg").textContent="Project tersimpan ✓";renderProj()}catch(e){$("pmsg").textContent="Gagal: "+(e.code||e.message)}};
+
+$("save").onclick=async function(){
+ var btn=$("save");
+ if(!$("proj").value){$("msg").textContent="Buat/pilih project dulu.";return}
+ btn.disabled=true;$("msg").textContent="Menyimpan…";
+ var params={};document.querySelectorAll("#params input").forEach(function(i){if(i.value.trim())params[i.dataset.k]=i.value.trim()});
+ var photos=[];
+ try{var fs=$("ph_in").files;if(fs.length){for(var i=0;i<fs.length;i++){photos.push(await upPhoto(fs[i]))}}}
+ catch(e){$("msg").textContent="Foto gagal diupload ("+(e.code||e.message)+"), data tetap disimpan."}
+ var t=new Date($("dt").value).getTime()||Date.now();
+ var rec={ts:Date.now(),trialAt:t,project:$("proj").value,by:$("by").value,stage:$("stage").value,method:$("method").value,pos:$("pos").value,mc:$("mc").value,
+  qty:Number($("qty").value)||0,ng:Number($("ng").value)||0,color:$("color").value,res:$("res").value,params:params,cat:$("cat").value.trim(),issue:$("issue").value.trim(),act:$("act").value.trim(),photos:photos};
+ try{
+  await api("POST","trials",toT(rec));last.t="";await loadT();
+  $("msg").textContent="Tersimpan ✓";
+  ["qty","issue","act","ph_in","cat"].forEach(function(k){$(k).value=""});$("ng").value=0;$("dt").value=nowLocal();
+  document.querySelectorAll("#params input").forEach(function(i){i.value=""});setCats();
+ }catch(e){$("msg").textContent="Gagal menyimpan: "+(e.code||e.message)}
+ btn.disabled=false;
+};
+
+function T(x){return x.trialAt||x.ts}
+function fmt(ts){return new Date(ts).toLocaleString("id-ID",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})}
+function day(ts){return new Date(ts).toLocaleDateString("id-ID",{day:"2-digit",month:"short",year:"numeric"})}
+function filtered(){var p=$("fp").value,m=$("fm").value,r=$("fr").value,q=$("fq").value.toLowerCase();
+ return rows.filter(function(x){return (!p||x.project==p)&&(!m||x.method==m)&&(!r||x.res==r)&&(!q||JSON.stringify(x).toLowerCase().indexOf(q)>=0)})}
+function summary(f){var g={};f.forEach(function(x){if(!x.cat||x.cat=="Tidak ada kendala")return;var k=(x.project||"-")+"||"+x.cat,o=g[k]=g[k]||{project:x.project||"-",cat:x.cat,n:0,fail:0,hold:0,ng:0,parts:[],last:0,detail:""};
+  o.n++;if(x.res=="Fail")o.fail++;if(x.res=="Hold")o.hold++;o.ng+=x.ng||0;var pt=x.method+" "+x.pos;if(o.parts.indexOf(pt)<0)o.parts.push(pt);if(T(x)>=o.last){o.last=T(x);o.detail=x.issue||""}});
+ return Object.keys(g).map(function(k){return g[k]}).sort(function(a,b){return a.project<b.project?-1:a.project>b.project?1:b.n-a.n})}
+function render(){
+ var f=filtered(),c=function(r){return f.filter(function(x){return x.res==r}).length};
+ var q=f.reduce(function(a,x){return a+x.qty},0),n=f.reduce(function(a,x){return a+x.ng},0);
+ $("stats").innerHTML="<div><b>"+f.length+"</b>Trial</div><div><b class=Pass>"+c("Pass")+"</b>Pass</div><div><b class=Fail>"+c("Fail")+"</b>Fail</div><div><b class=Hold>"+c("Hold")+"</b>Hold</div><div><b>"+(q?(n/q*100).toFixed(1):"0")+"%</b>NG rate</div>";
+ var s=summary(f);
+ $("sum").innerHTML=s.length?"<table><tr><th>Project</th><th>Kendala</th><th>Kejadian</th><th>Fail</th><th>Hold</th><th>NG pcs</th><th>Part terdampak</th><th>Terakhir</th></tr>"+s.map(function(o){return "<tr><td>"+esc(o.project)+"</td><td>"+esc(o.cat)+(o.detail?"<div class=m>"+esc(o.detail)+"</div>":"")+"</td><td>"+o.n+"</td><td>"+o.fail+"</td><td>"+o.hold+"</td><td>"+o.ng+"</td><td>"+esc(o.parts.join(", "))+"</td><td>"+day(o.last)+"</td></tr>"}).join("")+"</table>":"<span class=m>Belum ada kendala tercatat.</span>";
+ $("list").innerHTML=f.length?f.map(function(x){
+  var pr=Object.keys(x.params||{}).map(function(k){return esc(k)+": "+esc(x.params[k])}).join(" · ");
+  return "<div class=it><b>"+esc(x.project)+" · "+esc(x.method)+" · "+esc(x.pos)+"</b> <span class='pill "+x.res+"'>"+x.res+"</span><div class=m>"+fmt(T(x))+" · "+esc(x.stage)+" · "+esc(x.mc)+" · "+esc(x.by||x.tech)+" · Qty "+x.qty+" / NG "+x.ng+" · Warna: "+esc(x.color||"-")+"</div>"
+  +(x.cat&&x.cat!="Tidak ada kendala"?"<div><b>Kendala:</b> "+esc(x.cat)+(x.issue?" – "+esc(x.issue):"")+"</div>":"")
+  +(x.act?"<div><b>Tindakan:</b> "+esc(x.act)+"</div>":"")+(pr?"<div class=m>"+pr+"</div>":"")+"</div>"}).join(""):"<div class=m>Belum ada data.</div>";
+ var g={};f.forEach(function(x){(x.photos||[]).forEach(function(u){var k=(x.project||"-")+"||"+new Date(T(x)).toISOString().slice(0,10);(g[k]=g[k]||{p:x.project||"-",d:T(x),im:[]}).im.push({u:u,c:x.method+" "+x.pos+" ("+x.res+")"})})});
+ var ks=Object.keys(g).sort();
+ $("gal").innerHTML=ks.length?ks.map(function(k){var o=g[k];return "<h2>"+esc(o.p)+" · "+day(o.d)+"</h2>"+o.im.map(function(i){return "<a href=\""+esc(i.u)+"\" target=_blank><img src=\""+esc(i.u)+"\" title=\""+esc(i.c)+"\" alt=foto></a>"}).join("")}).join(""):"<span class=m>Belum ada foto.</span>";
+}
+["fp","fm","fr"].forEach(function(i){$(i).onchange=render});$("fq").oninput=render;
+
+function logRows(){var f=filtered(),keys=[];f.forEach(function(x){Object.keys(x.params||{}).forEach(function(k){if(keys.indexOf(k)<0)keys.push(k)})});
+ return f.slice().reverse().map(function(x,i){var o={"No":i+1,"Project":x.project,"Tanggal & Jam Trial":fmt(T(x)),"Tahap":x.stage,"Metode":x.method,"Part":x.pos,"Mesin":x.mc,"Diupdate oleh":x.by||x.tech,"Qty":x.qty,"Qty NG":x.ng,"NG %":x.qty?+(x.ng/x.qty*100).toFixed(1):0,"Warna":x.color||"","Hasil":x.res,"Kendala":x.cat,"Detail Kendala":x.issue,"Tindakan":x.act};
+  keys.forEach(function(k){o[k]=(x.params||{})[k]||""});o["Jumlah Foto"]=(x.photos||[]).length;return o})}
+function photoRows(){var r=[];filtered().slice().reverse().forEach(function(x){(x.photos||[]).forEach(function(u){r.push({"Project":x.project,"Tanggal":day(T(x)),"Jam":new Date(T(x)).toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"}),"Metode":x.method,"Part":x.pos,"Hasil":x.res,"Kendala":x.cat||"","Link Foto":u})})});
+ return r.sort(function(a,b){return a.Project<b.Project?-1:a.Project>b.Project?1:0})}
+function sumRows(){return summary(filtered()).map(function(o){return {"Project":o.project,"Kendala":o.cat,"Kejadian":o.n,"Fail":o.fail,"Hold":o.hold,"NG pcs":o.ng,"Part terdampak":o.parts.join(", "),"Terakhir":day(o.last),"Detail terakhir":o.detail}})}
+function save(name,data){var a=document.createElement("a"),u=URL.createObjectURL(new Blob([data],{type:"application/octet-stream"}));a.href=u;a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(u);a.remove()},500)}
+function sheet(wb,name,r){var ws=XLSX.utils.json_to_sheet(r.length?r:[{"Info":"Tidak ada data"}]);var h=Object.keys(r[0]||{"Info":1});ws["!cols"]=h.map(function(k){return {wch:Math.min(45,Math.max(10,k.length+2))}});XLSX.utils.book_append_sheet(wb,ws,name)}
+$("xl").onclick=function(){var l=logRows();if(!l.length)return alert("Tidak ada data.");var wb=XLSX.utils.book_new();
+ sheet(wb,"Summary Kendala",sumRows());sheet(wb,"Trial Log",l);sheet(wb,"Foto per Project",photoRows());
+ save("Trial_Report.xlsx",XLSX.write(wb,{bookType:"xlsx",type:"array"}))};
+$("cs").onclick=function(){var r=logRows();if(!r.length)return alert("Tidak ada data.");save("Trial_Log.csv","\ufeff"+XLSX.utils.sheet_to_csv(XLSX.utils.json_to_sheet(r)))};
+</script>
 </body>
 </html>
