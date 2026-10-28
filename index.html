@@ -960,14 +960,15 @@ function fillSummary(sm,f){var pg=progress(f);widths(sm,[2.6,5,22,9,12,22,9,38,1
   sm.getCell(r,9).font={name:"Arial",size:10,bold:true,color:{argb:ok?"FF1F9D63":"FFD6405A"}}})}
 async function buildReport(f,fname,b){if(!f.length)return toast("Tidak ada data untuk diekspor");var lbl=b.textContent;b.disabled=true;b.textContent="Menyiapkan…";
  try{var wb=new ExcelJS.Workbook(),pr=Array.from(new Set(f.map(function(x){return x.project||"-"})));
-  var cv=wb.addWorksheet("Cover",{views:[{showGridLines:false}]});widths(cv,[2.6,22,3,40,14,14,14]);
-  put(cv,2,2,7,"Trial Report ME – Handspray & Pad Print",{b:true,sz:16});
-  put(cv,4,2,2,"Project Name",{b:true});put(cv,4,3,3,":");put(cv,4,4,7,pr.join("\n"));cv.getRow(4).height=Math.max(18,pr.length*16);
-  put(cv,5,2,2,"PIC Member ME",{b:true});put(cv,5,3,3,":");put(cv,5,4,7,names(f,"by").join(", "));
-  put(cv,6,2,2,"Periode trial",{b:true});put(cv,6,3,3,":");put(cv,6,4,7,day(Math.min.apply(null,f.map(T)))+" – "+day(Math.max.apply(null,f.map(T))));
-  put(cv,7,2,2,"Total trial",{b:true});put(cv,7,3,3,":");put(cv,7,4,7,f.length+" trial");
-  put(cv,10,2,2,"Prepared by",{b:true,bd:true,fill:GREY,h:"center"});put(cv,10,4,4,"Checked by",{b:true,bd:true,fill:GREY,h:"center"});put(cv,10,5,7,"Approved by",{b:true,bd:true,fill:GREY,h:"center"});
-  put(cv,11,2,2,"",{bd:true});put(cv,11,4,4,"",{bd:true});put(cv,11,5,7,"Engineering Director",{bd:true,h:"center"});cv.getRow(11).height=70;var sm=wb.addWorksheet("Summary Trial",{views:[{showGridLines:false}]}),jr=wb.addWorksheet("Jadwal & Release",{views:[{showGridLines:false}]});
+  var cv=wb.addWorksheet("Cover",{views:[{showGridLines:false}]});widths(cv,[2.6,22,3,18,18,18,18,18]);
+  put(cv,2,2,8,"Trial Report ME – Handspray & Pad Print",{b:true,sz:16});
+  put(cv,4,2,2,"Project Name",{b:true});put(cv,4,3,3,":");put(cv,4,4,8,pr.join("\n"));cv.getRow(4).height=Math.max(18,pr.length*16);
+  put(cv,5,2,2,"PIC Member ME",{b:true});put(cv,5,3,3,":");put(cv,5,4,8,"ME Team");
+  put(cv,6,2,2,"Periode trial",{b:true});put(cv,6,3,3,":");put(cv,6,4,8,day(Math.min.apply(null,f.map(T)))+" – "+day(Math.max.apply(null,f.map(T))));
+  put(cv,7,2,2,"Total trial",{b:true});put(cv,7,3,3,":");put(cv,7,4,8,f.length+" trial");
+  put(cv,10,2,2,"Prepared by",{b:true,bd:true,fill:GREY,h:"center"});put(cv,10,4,8,"Approved by",{b:true,bd:true,fill:GREY,h:"center"});
+  put(cv,11,2,2,"ME",{bd:true,h:"center"});["Engineering Director","Production","Production","QA","Production Director"].forEach(function(t,i){put(cv,11,4+i,4+i,t,{bd:true,h:"center"})});
+  cv.getRow(11).height=80;[2,4,5,6,7,8].forEach(function(ci){cv.getCell(11,ci).alignment={vertical:"bottom",horizontal:"center",wrapText:true}});var sm=wb.addWorksheet("Summary Trial",{views:[{showGridLines:false}]}),jr=wb.addWorksheet("Jadwal & Release",{views:[{showGridLines:false}]});
   for(var p of pr){var fp=f.filter(function(x){return (x.project||"-")==p});
    for(var s of STAGES){var fs=fp.filter(function(x){return x.stage==s}),sc={};secs.filter(function(y){return y.project==p&&y.stage==s}).forEach(function(y){sc[y.section]=y.rows});
     if(fs.length||Object.keys(sc).length)stageSheet(wb,p,s,fs,sc)}
