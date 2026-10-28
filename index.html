@@ -590,6 +590,13 @@ main{max-width:1600px;margin-left:auto;margin-right:auto}
   <div class="gh">Daftar part dari project sebelumnya (klik untuk menambahkan)</div><div id="plib" class="sub">Belum ada.</div>
   <div style="margin-top:16px"><button class="btn" id="psave" type="button">Simpan project</button> <span id="pmsg" class="sub"></span></div>
  </div>
+ <div class="panel" style="margin-top:16px"><h2>Data Release Project</h2>
+  <div class="fg"><div class="field"><label>Project</label><select id="rp"></select></div>
+  <div class="field"><label>Target release</label><input type="date" id="rt"></div>
+  <div class="field"><label>Tanggal release (aktual)</label><input type="date" id="rd"></div>
+  <div class="field"><label>Status release</label><select id="rs"><option>Belum release</option><option>Siap release</option><option>Released</option></select></div></div>
+  <div class="field"><label>Catatan release</label><textarea id="rn" placeholder="Syarat release, dokumen, keputusan meeting…"></textarea></div>
+  <button class="btn" id="rsave" type="button">Simpan data release</button> <span id="rmsg" class="sub"></span></div>
  <div class="panel" style="margin-top:16px"><h2>Project yang ada</h2><div id="plist"></div></div>
 </section>
 
@@ -599,6 +606,7 @@ main{max-width:1600px;margin-left:auto;margin-right:auto}
  <div class="field"><label>Project untuk laporan lengkap</label><select id="xp"></select></div></div>
  <div class="fbar"><button class="btn" id="xm" type="button">Summary Meeting (tanggal di atas)</button><button class="btn ghost" id="xr" type="button">Laporan Project (awal–akhir)</button></div>
  <div class="sub" style="margin-top:8px">Dua tombol ini tidak terpengaruh filter di atas halaman.</div></div>
+ <div class="panel" style="margin-bottom:16px"><h2>Jadwal Project: Trial Pertama sampai Release</h2><div class="ov stk" id="sch"></div></div>
  <div class="panel" style="margin-bottom:16px"><h2>Progres Trial per Part (trial awal sampai OK)</h2><div class="ov stk" id="prog"></div></div>
  <div class="panel" style="margin-bottom:16px"><h2>Ringkasan Kendala per Project</h2><div class="ov stk" id="sum"></div></div>
  <div class="panel"><h2>Log Trial <span><button class="btn small" id="xl" type="button">Ekspor Excel</button> <button class="btn ghost small" id="cs" type="button">CSV</button> <button class="btn ghost small" id="im" type="button">Impor</button><input type="file" id="imf" accept=".xlsx,.csv" hidden></span></h2><div class="sub" style="margin-bottom:8px">Klik baris untuk melihat seluruh data trial dan mengedit.</div><div class="ov stk" id="log"></div></div>
@@ -652,12 +660,14 @@ document.addEventListener("click",function(e){if(e.target.dataset&&e.target.data
 
 /* supabase */
 function err(e){warn("Gagal terhubung ke Supabase: "+(e&&e.message?e.message.slice(0,200):e)+" — pastikan supabase-setup.sql sudah dijalankan.")}
-async function api(m,t,b,q,pref){var r=await fetch(SB+"/rest/v1/"+t+(q||""),{method:m,headers:{apikey:KEY,"Content-Type":"application/json",Prefer:pref||"return=minimal"},body:b?JSON.stringify(b):undefined});if(!r.ok)throw new Error(await r.text());return m=="GET"?r.json():null}
+async function api(m,t,b,q,pref,n){var r=await fetch(SB+"/rest/v1/"+t+(q||""),{method:m,headers:{apikey:KEY,"Content-Type":"application/json",Prefer:pref||"return=minimal"},body:b?JSON.stringify(b):undefined});if(!r.ok){var tx=await r.text(),mm=tx.match(/Could not find the '([^']+)' column/);
+  if(mm&&t=="trials"&&b&&(n||0)<4){(Array.isArray(b)?b:[b]).forEach(function(o){delete o[mm[1]]});warn("Database belum diperbarui: kolom '"+mm[1]+"' belum ada, sehingga data kolom itu belum tersimpan. Jalankan supabase-setup.sql terbaru di Supabase.");return api(m,t,b,q,pref,(n||0)+1)}
+  throw new Error(tx)}return m=="GET"?r.json():null}
 async function upPhoto(f){var ext=(f.name.split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,""),path=Date.now()+"-"+Math.random().toString(36).slice(2,8)+"."+ext;
  var r=await fetch(SB+"/storage/v1/object/"+BUCKET+"/"+path,{method:"POST",headers:{apikey:KEY,"Content-Type":f.type||"image/jpeg"},body:f});if(!r.ok)throw new Error(await r.text());return SB+"/storage/v1/object/public/"+BUCKET+"/"+path}
 function toT(x){return {ts:x.ts,trial_at:x.trialAt,project:x.project,by_name:x.by,stage:x.stage,method:x.method,pos:x.pos,mc:x.mc,qty:x.qty,ng:x.ng,color:x.color,res:x.res,params:x.params,cat:x.cat,issue:x.issue,act:x.act,photos:x.photos,trial_no:x.no,machine_photos:x.mp||{}}}
 function fromT(r){return {id:r.id,ts:r.ts,trialAt:r.trial_at,project:r.project,by:r.by_name,stage:r.stage,method:r.method,pos:r.pos,mc:r.mc,qty:r.qty||0,ng:r.ng||0,color:r.color,res:r.res,params:r.params||{},cat:r.cat||"",issue:r.issue||"",act:r.act||"",photos:r.photos||[],no:r.trial_no||1,mp:r.machine_photos||{}}}
-async function loadP(){var a=await api("GET","projects",null,"?select=*&order=ts.asc"),k=JSON.stringify(a);if(k==last.p)return;last.p=k;projs=a.map(function(r){return {id:r.id,name:r.name,parts:r.parts||[],ts:r.ts}});setProjSel();renderProj()}
+async function loadP(){var a=await api("GET","projects",null,"?select=*&order=ts.asc"),k=JSON.stringify(a);if(k==last.p)return;last.p=k;projs=a.map(function(r){return {id:r.id,name:r.name,parts:r.parts||[],ts:r.ts,rt:r.release_target||"",rd:r.release_date||"",rs:r.release_status||"Belum release",rn:r.release_note||""}});setProjSel();renderProj();if(!relDone&&projs.length){relDone=true;fillRel()}}
 async function loadT(){var a=await api("GET","trials",null,"?select=*&order=trial_at.desc"),k=JSON.stringify(a);if(k==last.t)return;last.t=k;rows=a.map(fromT);setCats();if(cur!="input"&&cur!="project"&&cur!="lab")render()}
 function init(){var go=function(){loadP().then(loadT).then(loadS).catch(err)};go();setInterval(go,8000)}
 
@@ -669,7 +679,7 @@ function setParts(){var p=curProj(),own=p?p.parts:[],other=[],c=$("pos").value;p
 function setCats(){var m=$("method").value,all=CATS[m].slice();rows.forEach(function(r){if(r.cat&&all.indexOf(r.cat)<0)all.push(r.cat)});$("catl").innerHTML=all.map(function(c){return "<option value=\""+esc(c)+"\">"}).join("")}
 function setMethod(){var m=$("method").value;$("params").innerHTML=PAR[m].map(function(k){return "<div class=field><label>"+k+"</label><input data-k=\""+k+"\"></div>"}).join("");setCats()}
 function setProjSel(){var c=$("proj").value,n=projs.map(function(p){return p.name});$("proj").innerHTML=n.length?opts(n):"<option value=\"\">(buat project dulu di tab Project)</option>";if(n.indexOf(c)>=0)$("proj").value=c;setParts();
- var lv=$("lp").value;$("lp").innerHTML=opts(n);if(n.indexOf(lv)>=0)$("lp").value=lv;var xv=$("xp").value;$("xp").innerHTML="<option value=\"\">Semua project</option>"+opts(n);$("xp").value=xv;var f=$("fp").value;$("fp").innerHTML="<option value=\"\">Semua project</option>"+opts(n);$("fp").value=f}
+ var lv=$("lp").value;$("lp").innerHTML=opts(n);if(n.indexOf(lv)>=0)$("lp").value=lv;var rv=$("rp").value;$("rp").innerHTML=opts(n);if(n.indexOf(rv)>=0)$("rp").value=rv;var xv=$("xp").value;$("xp").innerHTML="<option value=\"\">Semua project</option>"+opts(n);$("xp").value=xv;var f=$("fp").value;$("fp").innerHTML="<option value=\"\">Semua project</option>"+opts(n);$("fp").value=f}
 $("tno").innerHTML=Array.from({length:10},function(_,i){return "<option>"+(i+1)+"</option>"}).join("");
 function suggestNo(){var p=$("proj").value,st=$("stage").value,m=$("method").value,ps=$("pos").value,mx=0;rows.forEach(function(x){if(x.project==p&&x.stage==st&&x.method==m&&x.pos==ps&&(x.no||1)>mx)mx=x.no||1});$("tno").value=Math.min(10,mx+1)}
 $("method").onchange=function(){setMethod();suggestNo()};$("proj").onchange=function(){setParts();suggestNo()};$("stage").onchange=$("pos").onchange=suggestNo;setMethod();
@@ -694,7 +704,7 @@ function renderProj(){
  document.querySelectorAll("#pcur button").forEach(function(b){b.onclick=function(){newParts.splice(+b.dataset.i,1);renderProj()}});
  var l=libParts();$("plib").innerHTML=l.length?l.map(function(x){return "<button class=\"chip add\" data-p=\""+esc(x)+"\">＋ "+esc(x)+"</button>"}).join(""):"Belum ada.";
  document.querySelectorAll("#plib button").forEach(function(b){b.onclick=function(){newParts.push(b.dataset.p);renderProj()}});
- $("plist").innerHTML=projs.map(function(p){return "<div class=hot-row style=\"margin-bottom:8px;display:block\"><b>"+esc(p.name)+"</b><div class=sub>"+esc(p.parts.join(", ")||"-")+"</div></div>"}).join("")||"<span class=sub>Belum ada project.</span>"}
+ $("plist").innerHTML=projs.map(function(p){return "<div class=hot-row style=\"margin-bottom:8px;display:block\"><b>"+esc(p.name)+"</b><div class=sub>"+esc(p.parts.join(", ")||"-")+"</div><div class=sub>Release: "+esc(p.rs)+" · Target "+fd(p.rt)+" · Aktual "+fd(p.rd)+"</div></div>"}).join("")||"<span class=sub>Belum ada project.</span>"}
 $("padd").onclick=function(){var v=$("pp").value.trim();if(v&&newParts.indexOf(v)<0)newParts.push(v);$("pp").value="";renderProj()};
 $("psave").onclick=async function(){var n=$("pn").value.trim();if(!n){$("pmsg").textContent="Isi nama project.";return}
  if(projs.some(function(p){return p.name.toLowerCase()==n.toLowerCase()})){$("pmsg").textContent="Nama project sudah ada.";return}
@@ -725,11 +735,12 @@ function rDash(){var f=filtered(),c=function(r){return f.filter(function(x){retu
  var mx=cs.length?ct[cs[0]]:1;$("topKendala").innerHTML=cs.slice(0,8).map(function(k,i){return "<div class=barrow><div class=lbl>"+esc(k)+"</div><div class=track><div class=fill style=\"width:"+Math.max(6,ct[k]/mx*100)+"%;background:"+BARC[i%7]+"\"></div></div><div class=val>"+ct[k]+"</div></div>"}).join("")||"<div class=sub>Belum ada kendala.</div>";
  var pn=Array.from(new Set(f.map(function(x){return x.project||"-"})));
  mk("cProj",{type:"bar",data:{labels:pn,datasets:[["Pass","#4ecb8e"],["Fail","#f0687c"],["Hold","#f6b73c"]].map(function(a){return {label:a[0],backgroundColor:a[1],data:pn.map(function(p){return f.filter(function(x){return (x.project||"-")==p&&x.res==a[0]}).length})}})},options:{maintainAspectRatio:false,scales:{x:{stacked:true},y:{stacked:true,ticks:{precision:0}}}}})}
-function rData(){var f=filtered(),s=summary(f),pg=progress(f);
+function rData(){var f=filtered(),s=summary(f),pg=progress(f),sc=schedule();
+ $("sch").innerHTML=sc.length?"<table><tr><th>Project</th><th>Trial pertama</th><th>EP</th><th>FEP</th><th>PP2K</th><th>PP3K</th><th>Trial terakhir</th><th>Target release</th><th>Release aktual</th><th>Status</th><th>Durasi</th></tr>"+sc.map(function(o){return "<tr><td><b>"+esc(o.name)+"</b>"+(o.rn?"<div class=sub>Catatan: "+esc(o.rn)+"</div>":"")+"</td><td>"+(o.first?day(o.first):"-")+"</td><td>"+stTxt(o.st.EP)+"</td><td>"+stTxt(o.st.FEP)+"</td><td>"+stTxt(o.st.PP2K)+"</td><td>"+stTxt(o.st.PP3K)+"</td><td>"+(o.last?day(o.last):"-")+"</td><td>"+fd(o.rt)+"</td><td>"+fd(o.rd)+"</td><td><span class=\"pill "+(o.rs=="Released"?"Pass":o.rs=="Siap release"?"Hold":"")+"\">"+esc(o.rs)+"</span></td><td>"+durTxt(o)+"</td></tr>"}).join("")+"</table>":"<div class=sub>Belum ada project.</div>";
  $("prog").innerHTML=pg.length?"<table><tr><th>Project</th><th>Tahap</th><th>Metode / Part</th><th>Riwayat trial</th><th>Hasil akhir</th><th>Trial OK</th></tr>"+pg.map(function(o){return "<tr><td>"+esc(o.project)+"</td><td>"+esc(o.stage)+"</td><td>"+esc(o.method)+"<div class=sub>"+esc(o.pos)+"</div></td><td>"+o.t.map(function(x){return "<span class=\"pill "+x.res+"\">T"+(x.no||1)+" "+x.res+"</span>"}).join(" → ")+"</td><td><span class=\"pill "+(o.ok?"Pass":o.t[o.t.length-1].res)+"\">"+esc(o.final)+"</span></td><td>"+(o.ok?"T"+(o.ok.no||1)+" · "+day(T(o.ok)):"-")+"</td></tr>"}).join("")+"</table>":"<div class=sub>Belum ada data.</div>";
  $("sum").innerHTML=s.length?"<table><tr><th>Project</th><th>Kendala</th><th>Kejadian</th><th>Fail</th><th>Hold</th><th>NG pcs</th><th>Part terdampak</th><th>Terakhir</th></tr>"+s.map(function(o){return "<tr><td>"+esc(o.project)+"</td><td>"+esc(o.cat)+(o.detail?"<div class=sub>"+esc(o.detail)+"</div>":"")+"</td><td>"+o.n+"</td><td>"+o.fail+"</td><td>"+o.hold+"</td><td>"+o.ng+"</td><td>"+esc(o.parts.join(", "))+"</td><td>"+day(o.last)+"</td></tr>"}).join("")+"</table>":"<div class=sub>Belum ada kendala tercatat.</div>";
  $("log").innerHTML=f.length?"<table><tr><th>Waktu trial</th><th>Project</th><th>Tahap</th><th>Metode / Part</th><th>Trial</th><th>Mesin</th><th>Qty / NG</th><th>Warna</th><th>Hasil</th><th>Kendala &amp; tindakan</th><th>Oleh</th><th>Foto produk</th><th>Foto mesin</th></tr>"+f.map(function(x){
-  return "<tr class=clk data-id=\""+esc(x.id)+"\"><td>"+fmt(T(x))+"</td><td>"+esc(x.project)+"</td><td>"+esc(x.stage)+"</td><td>"+esc(x.method)+"<div class=sub>"+esc(x.pos)+"</div></td><td>T"+(x.no||1)+"</td><td>"+esc(x.mc)+"</td><td>"+x.qty+" / "+x.ng+"</td><td>"+esc(x.color||"-")+"</td><td><span class=\"pill "+x.res+"\">"+x.res+"</span></td><td>"+(x.cat&&x.cat!="Tidak ada kendala"?"<b>"+esc(x.cat)+"</b> "+esc(x.issue):"-")+(x.act?"<div class=sub>Tindakan: "+esc(x.act)+"</div>":"")+"</td><td>"+esc(x.by)+"</td><td>"+(x.photos||[]).map(function(u){return "<img class=table-thumb data-zoom=\""+esc(u)+"\" src=\""+esc(u)+"\">"}).join(" ")+"</td><td>"+mpThumbs(x)+"</td></tr>"}).join("")+"</table>":"<div class=sub>Belum ada data.</div>";labelT("prog");labelT("sum");labelT("log")}
+  return "<tr class=clk data-id=\""+esc(x.id)+"\"><td>"+fmt(T(x))+"</td><td>"+esc(x.project)+"</td><td>"+esc(x.stage)+"</td><td>"+esc(x.method)+"<div class=sub>"+esc(x.pos)+"</div></td><td>T"+(x.no||1)+"</td><td>"+esc(x.mc)+"</td><td>"+x.qty+" / "+x.ng+"</td><td>"+esc(x.color||"-")+"</td><td><span class=\"pill "+x.res+"\">"+x.res+"</span></td><td>"+(x.cat&&x.cat!="Tidak ada kendala"?"<b>"+esc(x.cat)+"</b> "+esc(x.issue):"-")+(x.act?"<div class=sub>Tindakan: "+esc(x.act)+"</div>":"")+"</td><td>"+esc(x.by)+"</td><td>"+(x.photos||[]).map(function(u){return "<img class=table-thumb data-zoom=\""+esc(u)+"\" src=\""+esc(u)+"\">"}).join(" ")+"</td><td>"+mpThumbs(x)+"</td></tr>"}).join("")+"</table>":"<div class=sub>Belum ada data.</div>";labelT("sch");labelT("prog");labelT("sum");labelT("log")}
 function labelT(id){document.querySelectorAll("#"+id+" table").forEach(function(t){var h=Array.from(t.rows[0].cells).map(function(c){return c.textContent});Array.from(t.rows).slice(1).forEach(function(r){Array.from(r.cells).forEach(function(c,i){c.setAttribute("data-l",h[i]||"")})})})}
 var CAT=[["p","Foto Produk"],["hmi","Parameter Mesin – HMI"],["speed","Parameter Mesin – Speed"],["angin","Parameter Mesin – Angin"],["proses","Parameter Mesin – Proses"]];
 var MPK=[["hmi","HMI"],["speed","Speed"],["angin","Angin"],["proses","Proses"]];
@@ -786,6 +797,24 @@ async function saveEdit(){var b=$("eSave");b.disabled=true;$("eMsg").textContent
   await api("PATCH","trials",toT(rec),"?id=eq."+id);last.t="";await loadT();toast("Perubahan tersimpan ✓");openDetail(id)}
  catch(e){$("eMsg").textContent="Gagal: "+e.message.slice(0,120);b.disabled=false}}
 $("log").addEventListener("click",function(e){if(e.target.dataset&&e.target.dataset.zoom)return;var tr=e.target.closest("tr[data-id]");if(tr)openDetail(tr.dataset.id)});
+
+/* Jadwal & release */
+var relDone=false;
+function fillRel(){var p=projs.filter(function(x){return x.name==$("rp").value})[0]||{};$("rt").value=p.rt||"";$("rd").value=p.rd||"";$("rs").value=p.rs||"Belum release";$("rn").value=p.rn||""}
+$("rp").onchange=fillRel;
+$("rsave").onclick=async function(){var p=projs.filter(function(x){return x.name==$("rp").value})[0];if(!p){$("rmsg").textContent="Pilih project dulu.";return}
+ try{await api("PATCH","projects",{release_target:$("rt").value||null,release_date:$("rd").value||null,release_status:$("rs").value,release_note:$("rn").value.trim()},"?id=eq."+p.id);last.p="";await loadP();fillRel();$("rmsg").textContent="Tersimpan ✓";toast("Data release tersimpan")}catch(e){$("rmsg").textContent="Gagal: "+e.message.slice(0,140)}};
+function schedule(names){var pf=$("fp").value;return projs.filter(function(p){return names?names.indexOf(p.name)>=0:(!pf||p.name==pf)}).map(function(p){var f=rows.filter(function(x){return x.project==p.name}),st={};
+ STAGES.forEach(function(s){var a=f.filter(function(x){return x.stage==s});if(a.length){var ts=a.map(T);st[s]={a:Math.min.apply(null,ts),b:Math.max.apply(null,ts),n:a.length}}});
+ var ts=f.map(T),first=ts.length?Math.min.apply(null,ts):null,lt=ts.length?Math.max.apply(null,ts):null,rd=p.rd||"";
+ return {name:p.name,first:first,last:lt,st:st,rt:p.rt||"",rd:rd,rs:p.rs||"Belum release",rn:p.rn||"",dur:first&&rd?Math.round((new Date(rd)-new Date(iso(first)))/864e5):null,run:first&&!rd?Math.round((Date.now()-first)/864e5):null}})}
+function stTxt(o){return o?day(o.a)+(o.b!=o.a?" – "+day(o.b):"")+" ("+o.n+" trial)":"-"}
+function durTxt(o){return o.dur!=null?o.dur+" hari":o.run!=null?o.run+" hari (berjalan)":"-"}
+function fd(s){return s?day(new Date(s+"T00:00:00").getTime()):"-"}
+function fillSchedule(ws,names){var sc=schedule(names);widths(ws,[2.6,5,22,14,14,26,26,26,26,14,14,14,18,40]);
+ put(ws,1,2,10,"Jadwal Project: Trial Pertama sampai Release",{b:true,sz:13,fill:BLUE});
+ ["No","Project","Trial Pertama","Trial Terakhir","EP","FEP","PP2K","PP3K","Target Release","Release Aktual","Status Release","Durasi","Catatan Release"].forEach(function(h,i){put(ws,3,2+i,2+i,h,{b:true,bd:true,fill:GREY,h:"center"})});
+ sc.forEach(function(o,i){[i+1,o.name,o.first?day(o.first):"-",o.last?day(o.last):"-",stTxt(o.st.EP),stTxt(o.st.FEP),stTxt(o.st.PP2K),stTxt(o.st.PP3K),fd(o.rt),fd(o.rd),o.rs,durTxt(o),o.rn].forEach(function(a,j){put(ws,4+i,2+j,2+j,a,{bd:true,h:j==0||j==2||j==3||j>=8&&j<=11?"center":"left"})})})}
 
 function dl(name,data){var a=document.createElement("a"),u=URL.createObjectURL(new Blob([data],{type:"application/octet-stream"}));a.href=u;a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(u);a.remove()},500)}
 var SEC={completeness:{t:"Received Decoration Completeness",c:["Item Name","Received Date","Qty","Status","Remark"],d:["Reference Sample","Engineering Sample","SAS Sample","Deco Plan","Standard Operating Procedure (SOP)","Paint / Ink","Spray Mask","Pad Print Fixtures","Pad Print Plates","3D Design Fixtures","CAD file Artwork","Reference Plastic Part"].map(function(x){return [x]})},
@@ -938,12 +967,12 @@ async function buildReport(f,fname,b){if(!f.length)return toast("Tidak ada data 
   put(cv,6,2,2,"Periode trial",{b:true});put(cv,6,3,3,":");put(cv,6,4,7,day(Math.min.apply(null,f.map(T)))+" – "+day(Math.max.apply(null,f.map(T))));
   put(cv,7,2,2,"Total trial",{b:true});put(cv,7,3,3,":");put(cv,7,4,7,f.length+" trial");
   put(cv,10,2,2,"Prepared by",{b:true,bd:true,fill:GREY,h:"center"});put(cv,10,4,4,"Checked by",{b:true,bd:true,fill:GREY,h:"center"});put(cv,10,5,7,"Approved by",{b:true,bd:true,fill:GREY,h:"center"});
-  put(cv,11,2,2,"",{bd:true});put(cv,11,4,4,"",{bd:true});put(cv,11,5,7,"Engineering Director",{bd:true,h:"center"});cv.getRow(11).height=70;var sm=wb.addWorksheet("Summary Trial",{views:[{showGridLines:false}]});
+  put(cv,11,2,2,"",{bd:true});put(cv,11,4,4,"",{bd:true});put(cv,11,5,7,"Engineering Director",{bd:true,h:"center"});cv.getRow(11).height=70;var sm=wb.addWorksheet("Summary Trial",{views:[{showGridLines:false}]}),jr=wb.addWorksheet("Jadwal & Release",{views:[{showGridLines:false}]});
   for(var p of pr){var fp=f.filter(function(x){return (x.project||"-")==p});
    for(var s of STAGES){var fs=fp.filter(function(x){return x.stage==s}),sc={};secs.filter(function(y){return y.project==p&&y.stage==s}).forEach(function(y){sc[y.section]=y.rows});
     if(fs.length||Object.keys(sc).length)stageSheet(wb,p,s,fs,sc)}
    await attachSheet(wb,p,fp)}
-  fillSummary(sm,f);var dt=wb.addWorksheet("Data Trial");dt.addRow(TH_);f.slice().sort(function(a,b){return T(a)-T(b)}).forEach(function(x){dt.addRow(trialRow(x))});dt.getRow(1).font={bold:true};widths(dt,TH_.map(function(){return 18}));
+  fillSummary(sm,f);fillSchedule(jr,pr);var dt=wb.addWorksheet("Data Trial");dt.addRow(TH_);f.slice().sort(function(a,b){return T(a)-T(b)}).forEach(function(x){dt.addRow(trialRow(x))});dt.getRow(1).font={bold:true};widths(dt,TH_.map(function(){return 18}));
   dl(fname,await wb.xlsx.writeBuffer());toast("Excel dibuat")}catch(e){toast("Gagal ekspor: "+e.message)}
  b.disabled=false;b.textContent=lbl}
 $("xl").onclick=function(){buildReport(filtered(),"Trial_Report_ME.xlsx",$("xl"))};
