@@ -557,11 +557,13 @@ main{max-width:1600px;margin-left:auto;margin-right:auto}
   <div class="field"><label>Tahap</label><select id="stage"><option>EP</option><option>FEP</option><option>PP2K</option><option>PP3K</option><option>Trial Lain</option></select></div>
   <div class="field"><label>Metode</label><select id="method"><option>Handspray</option><option>Pad Print</option></select></div>
   <div class="field"><label>Part</label><select id="pos"></select></div>
+  <div class="field"><label>Warna cat (pilih / ketik, atau Cat trial)</label><input id="paint" list="paintl" placeholder="Pilih warna atau Cat trial"><datalist id="paintl"></datalist></div>
+  <div style="grid-column:1/-1"><div id="planRef" class="sub"></div></div>
   <div class="field"><label>Trial ke-</label><select id="tno"></select></div>
   <div class="field"><label>Mesin / Line</label><input id="mc" placeholder="mis. C08"></div>
   <div class="field"><label>Qty trial (pcs)</label><input id="qty" type="number" inputmode="numeric"></div>
   <div class="field"><label>Qty NG (pcs)</label><input id="ng" type="number" inputmode="numeric" value="0"></div>
-  <div class="field"><label>Warna</label><select id="color"><option>OK</option><option>Revisi mixed</option></select></div>
+  <div class="field"><label>Hasil warna</label><select id="color"><option>OK</option><option>Revisi mixed</option></select></div>
   <div class="field"><label>Hasil</label><select id="res"><option>Pass</option><option>Fail</option><option>Hold</option></select></div>
  </div>
  <div class="gh">Parameter aktual</div><div class="fg" id="params"></div>
@@ -585,11 +587,18 @@ main{max-width:1600px;margin-left:auto;margin-right:auto}
  <div class="panel"><h2>Project baru</h2>
   <div class="field"><label>Nama project</label><input id="pn" placeholder="Nama project"></div>
   <div class="gh">Part project ini</div>
-  <div class="fbar"><input id="pp" placeholder="Ketik nama part lalu Tambah"><button class="btn ghost small" id="padd" type="button">Tambah</button></div>
+  <div class="fbar"><input id="pp" placeholder="Nama part"><input id="pc" placeholder="Warna cat part ini (pisahkan koma), mis. Hitam, Putih"><button class="btn ghost small" id="padd" type="button">Tambah</button></div>
   <div id="pcur" style="margin-top:8px"></div>
   <div class="gh">Daftar part dari project sebelumnya (klik untuk menambahkan)</div><div id="plib" class="sub">Belum ada.</div>
   <div style="margin-top:16px"><button class="btn" id="psave" type="button">Simpan project</button> <span id="pmsg" class="sub"></span></div>
  </div>
+ <div class="panel" style="margin-top:16px"><h2>Impor Decoplan (acuan project &amp; part)</h2>
+  <div class="sub">File Excel/CSV dengan kolom Project ID, Job Flow, Position, Face (nama part), metode (BOOK MASK / PAD PRINT), Number Process, dan Color. Project, part, posisi, warna cat, dan acuan jumlah tampo dibuat otomatis. Impor ulang file project yang sama akan memperbarui acuannya.</div>
+  <div class="fbar" style="margin-top:10px"><button class="btn" id="dpbtn" type="button">Impor Decoplan</button><input type="file" id="dpf" accept=".xlsx,.csv" hidden><span id="dpmsg" class="sub"></span></div></div>
+ <div class="panel" style="margin-top:16px"><h2>Warna Cat per Part</h2>
+  <div class="field"><label>Project</label><select id="cp"></select></div>
+  <div id="cpBox" class="fg"></div>
+  <button class="btn" id="csave" type="button">Simpan warna cat</button> <span id="cmsg" class="sub"></span></div>
  <div class="panel" style="margin-top:16px"><h2>Data Release Project</h2>
   <div class="fg"><div class="field"><label>Project</label><select id="rp"></select></div>
   <div class="field"><label>Target release</label><input type="date" id="rt"></div>
@@ -606,6 +615,7 @@ main{max-width:1600px;margin-left:auto;margin-right:auto}
  <div class="field"><label>Project untuk laporan lengkap</label><select id="xp"></select></div></div>
  <div class="fbar"><button class="btn" id="xm" type="button">Summary Meeting (tanggal di atas)</button><button class="btn ghost" id="xr" type="button">Laporan Project (awal–akhir)</button></div>
  <div class="sub" style="margin-top:8px">Dua tombol ini tidak terpengaruh filter di atas halaman.</div></div>
+ <div class="panel" style="margin-bottom:16px"><h2>Acuan Decoplan vs Hasil Trial (acuan release PP2K)</h2><div class="ov stk" id="dplan"></div></div>
  <div class="panel" style="margin-bottom:16px"><h2>Jadwal Project: Trial Pertama sampai Release</h2><div class="ov stk" id="sch"></div></div>
  <div class="panel" style="margin-bottom:16px"><h2>Progres Trial per Part (trial awal sampai OK)</h2><div class="ov stk" id="prog"></div></div>
  <div class="panel" style="margin-bottom:16px"><h2>Ringkasan Kendala per Project</h2><div class="ov stk" id="sum"></div></div>
@@ -615,6 +625,9 @@ main{max-width:1600px;margin-left:auto;margin-right:auto}
 <section id="tab-lab" class="hidden"><div class="panel"><h2>Kelengkapan Dekorasi, Tools &amp; Lab Report</h2>
 <div class="fg"><div class="field"><label>Project</label><select id="lp"></select></div><div class="field"><label>Tahap</label><select id="ls"><option>EP</option><option>FEP</option><option>PP2K</option><option>PP3K</option><option>Trial Lain</option></select></div></div>
 <div id="labBox"></div>
+<div class="gh">Foto Dokumen Lab (untuk project &amp; tahap yang dipilih)</div><div id="labDocs"></div>
+<div class="field"><label>Tambah foto dokumen Lab</label><input type="file" id="labf" accept="image/*" multiple></div>
+<datalist id="resl"><option>OK</option><option>NG</option><option>Pass</option><option>Fail</option><option>On progress</option></datalist>
 <div style="margin-top:16px"><button class="btn" id="lsave" type="button">Simpan</button> <button class="btn ghost small" id="lreset" type="button">Muat ulang dari data tersimpan</button></div></div></section>
 
 <section id="tab-galeri" class="hidden"><div class="panel"><h2>Foto Hasil Trial (per project &amp; tanggal)</h2><div id="gal"></div></div></section>
@@ -628,10 +641,11 @@ main{max-width:1600px;margin-left:auto;margin-right:auto}
 
 var $=function(i){return document.getElementById(i)};
 var SB="https://edmylqrsinorprliaoxu.supabase.co",KEY="sb_publishable_xm8If-u4NuGkydo4ULg-hQ_wBrdEDec",BUCKET="trial-photos";
-var PAR={"Handspray":["Warna cat","Din cup (detik)","Rasio cat","Spray cycle time (s)","Jarak gun ke part (cm)","Tekanan udara (MPa)","Frek. cleaning mask (pcs)","Konsumsi cat (g/pcs)"],
-"Pad Print":["Warna ink","Viskositas (KU)","Rubber head","Plate depth (mm)","Delay pick up ink (s)","Delay transfer ke part (s)","Jarak rear/front stopper (mm)","Cycle time (s)"]};
+var PAR={"Handspray":["Mode spray","CT Cat","Rasio cat","Spray cycle time (s)","Kode masking","Tekanan udara (MPa)","Frek. cleaning mask (pcs)","Konsumsi cat (g/pcs)"],
+"Pad Print":["Jumlah tampo (kali)","Warna ink","Viskositas (KU)","Rubber head","Plate depth (mm)","Delay pick up ink (s)","Delay transfer ke part (s)","Jarak rear/front stopper (mm)","Cycle time (s)"]};
 var CATS={"Handspray":["Tidak ada kendala","Mask / jig","Kualitas cat (kasar, orange peel)","Cat bocor / bleeding","Ketebalan tidak rata","Dust / kontaminasi","Adhesion","Parameter"],
 "Pad Print":["Tidak ada kendala","Fixture longgar / posisi geser","Plate (kurang/lebih dalam)","Rubber head","Ink (viskositas / kering)","Image tidak lengkap / blur","Misalignment","Adhesion","Cycle time > target"]};
+var SELOPT={"Mode spray":["Mesin","Manual"]},newColors={},pk="",workDocs=[];
 var STAGES=["EP","FEP","PP2K","PP3K","Trial Lain"];
 var STT={"EP":"Report Engineering Piloting (EP)","FEP":"Report Final Engineering Piloting (FEP)","PP2K":"Production Piloting Internal 2K (PP2K)","PP3K":"Production Piloting 3K (PP3K)","Trial Lain":"Laporan Trial"};
 var OBJ={"EP":"The Engineering Piloting is conducted to evaluate the feasibility of the decoration process, tooling, and initial process parameters before the Final Engineering Piloting.","FEP":"The Final Engineering Piloting is conducted to ensure that the tooling, process method, machine type, and key process parameters are established and ready for Production Piloting.","other":"Production Piloting is conducted to verify that the developed product can consistently meet the required quality standards, including appearance, shape, aesthetics, color, and other applicable quality tests."};
@@ -665,9 +679,9 @@ async function api(m,t,b,q,pref,n){var r=await fetch(SB+"/rest/v1/"+t+(q||""),{m
   throw new Error(tx)}return m=="GET"?r.json():null}
 async function upPhoto(f){var ext=(f.name.split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,""),path=Date.now()+"-"+Math.random().toString(36).slice(2,8)+"."+ext;
  var r=await fetch(SB+"/storage/v1/object/"+BUCKET+"/"+path,{method:"POST",headers:{apikey:KEY,"Content-Type":f.type||"image/jpeg"},body:f});if(!r.ok)throw new Error(await r.text());return SB+"/storage/v1/object/public/"+BUCKET+"/"+path}
-function toT(x){return {ts:x.ts,trial_at:x.trialAt,project:x.project,by_name:x.by,stage:x.stage,method:x.method,pos:x.pos,mc:x.mc,qty:x.qty,ng:x.ng,color:x.color,res:x.res,params:x.params,cat:x.cat,issue:x.issue,act:x.act,photos:x.photos,trial_no:x.no,machine_photos:x.mp||{}}}
-function fromT(r){return {id:r.id,ts:r.ts,trialAt:r.trial_at,project:r.project,by:r.by_name,stage:r.stage,method:r.method,pos:r.pos,mc:r.mc,qty:r.qty||0,ng:r.ng||0,color:r.color,res:r.res,params:r.params||{},cat:r.cat||"",issue:r.issue||"",act:r.act||"",photos:r.photos||[],no:r.trial_no||1,mp:r.machine_photos||{}}}
-async function loadP(){var a=await api("GET","projects",null,"?select=*&order=ts.asc"),k=JSON.stringify(a);if(k==last.p)return;last.p=k;projs=a.map(function(r){return {id:r.id,name:r.name,parts:r.parts||[],ts:r.ts,rt:r.release_target||"",rd:r.release_date||"",rs:r.release_status||"Belum release",rn:r.release_note||""}});setProjSel();renderProj();if(!relDone&&projs.length){relDone=true;fillRel()}}
+function toT(x){return {ts:x.ts,trial_at:x.trialAt,project:x.project,by_name:x.by,stage:x.stage,method:x.method,pos:x.pos,mc:x.mc,qty:x.qty,ng:x.ng,color:x.color,res:x.res,params:x.params,cat:x.cat,issue:x.issue,act:x.act,photos:x.photos,trial_no:x.no,machine_photos:x.mp||{},paint_color:x.paint||""}}
+function fromT(r){return {id:r.id,ts:r.ts,trialAt:r.trial_at,project:r.project,by:r.by_name,stage:r.stage,method:r.method,pos:r.pos,mc:r.mc,qty:r.qty||0,ng:r.ng||0,color:r.color,res:r.res,params:r.params||{},cat:r.cat||"",issue:r.issue||"",act:r.act||"",photos:r.photos||[],no:r.trial_no||1,mp:r.machine_photos||{},paint:r.paint_color||""}}
+async function loadP(){var a=await api("GET","projects",null,"?select=*&order=ts.asc"),k=JSON.stringify(a);if(k==last.p)return;last.p=k;projs=a.map(function(r){return {id:r.id,name:r.name,parts:r.parts||[],co:r.colors||{},ts:r.ts,rt:r.release_target||"",rd:r.release_date||"",rs:r.release_status||"Belum release",rn:r.release_note||""}});setProjSel();renderProj();if(!relDone&&projs.length){relDone=true;fillRel();fillCol()}}
 async function loadT(){var a=await api("GET","trials",null,"?select=*&order=trial_at.desc"),k=JSON.stringify(a);if(k==last.t)return;last.t=k;rows=a.map(fromT);setCats();if(cur!="input"&&cur!="project"&&cur!="lab")render()}
 function init(){var go=function(){loadP().then(loadT).then(loadS).catch(err)};go();setInterval(go,8000)}
 
@@ -675,40 +689,40 @@ function init(){var go=function(){loadP().then(loadT).then(loadS).catch(err)};go
 function curProj(){var n=$("proj").value;return projs.filter(function(p){return p.name==n})[0]}
 function setParts(){var p=curProj(),own=p?p.parts:[],other=[],c=$("pos").value;projs.forEach(function(q){if(q!==p)q.parts.forEach(function(x){if(own.indexOf(x)<0&&other.indexOf(x)<0)other.push(x)})});
  $("pos").innerHTML=(own.length?"<optgroup label=\"Part project ini\">"+opts(own)+"</optgroup>":"")+(other.length?"<optgroup label=\"Part dari project sebelumnya\">"+opts(other)+"</optgroup>":"")||"<option>(isi part di tab Project)</option>";
- if(c&&own.concat(other).indexOf(c)>=0)$("pos").value=c}
+ if(c&&own.concat(other).indexOf(c)>=0)$("pos").value=c;setPaint()}
 function setCats(){var m=$("method").value,all=CATS[m].slice();rows.forEach(function(r){if(r.cat&&all.indexOf(r.cat)<0)all.push(r.cat)});$("catl").innerHTML=all.map(function(c){return "<option value=\""+esc(c)+"\">"}).join("")}
-function setMethod(){var m=$("method").value;$("params").innerHTML=PAR[m].map(function(k){return "<div class=field><label>"+k+"</label><input data-k=\""+k+"\"></div>"}).join("");setCats()}
+function setMethod(){var m=$("method").value;$("params").innerHTML=PAR[m].map(function(k){return pfield(k,"","")}).join("");setCats()}
 function setProjSel(){var c=$("proj").value,n=projs.map(function(p){return p.name});$("proj").innerHTML=n.length?opts(n):"<option value=\"\">(buat project dulu di tab Project)</option>";if(n.indexOf(c)>=0)$("proj").value=c;setParts();
- var lv=$("lp").value;$("lp").innerHTML=opts(n);if(n.indexOf(lv)>=0)$("lp").value=lv;var rv=$("rp").value;$("rp").innerHTML=opts(n);if(n.indexOf(rv)>=0)$("rp").value=rv;var xv=$("xp").value;$("xp").innerHTML="<option value=\"\">Semua project</option>"+opts(n);$("xp").value=xv;var f=$("fp").value;$("fp").innerHTML="<option value=\"\">Semua project</option>"+opts(n);$("fp").value=f}
+ var lv=$("lp").value;$("lp").innerHTML=opts(n);if(n.indexOf(lv)>=0)$("lp").value=lv;var cv2=$("cp").value;$("cp").innerHTML=opts(n);if(n.indexOf(cv2)>=0)$("cp").value=cv2;var rv=$("rp").value;$("rp").innerHTML=opts(n);if(n.indexOf(rv)>=0)$("rp").value=rv;var xv=$("xp").value;$("xp").innerHTML="<option value=\"\">Semua project</option>"+opts(n);$("xp").value=xv;var f=$("fp").value;$("fp").innerHTML="<option value=\"\">Semua project</option>"+opts(n);$("fp").value=f}
 $("tno").innerHTML=Array.from({length:10},function(_,i){return "<option>"+(i+1)+"</option>"}).join("");
 function suggestNo(){var p=$("proj").value,st=$("stage").value,m=$("method").value,ps=$("pos").value,mx=0;rows.forEach(function(x){if(x.project==p&&x.stage==st&&x.method==m&&x.pos==ps&&(x.no||1)>mx)mx=x.no||1});$("tno").value=Math.min(10,mx+1)}
-$("method").onchange=function(){setMethod();suggestNo()};$("proj").onchange=function(){setParts();suggestNo()};$("stage").onchange=$("pos").onchange=suggestNo;setMethod();
+$("method").onchange=function(){setMethod();suggestNo();planSync(false)};$("proj").onchange=function(){setParts();suggestNo()};$("stage").onchange=suggestNo;$("pos").onchange=function(){suggestNo();setPaint()};setMethod();
 
 $("save").onclick=async function(){
  if(!$("proj").value){$("msg").textContent="Buat/pilih project dulu.";return}
  var btn=$("save");btn.disabled=true;$("msg").textContent="Menyimpan…";
- var params={};document.querySelectorAll("#params input").forEach(function(i){if(i.value.trim())params[i.dataset.k]=i.value.trim()});
+ var params={};document.querySelectorAll("#params input,#params select").forEach(function(i){if(i.value.trim())params[i.dataset.k]=i.value.trim()});
  var photos=[];
  var mp={};try{var fs=$("ph_in").files;for(var i=0;i<fs.length;i++)photos.push(await upPhoto(fs[i]));for(var kk of MPK){var f2=$("mp_"+kk[0]).files;mp[kk[0]]=[];for(var i2=0;i2<f2.length;i2++)mp[kk[0]].push(await upPhoto(f2[i2]))}}catch(e){$("msg").textContent="Foto gagal diupload ("+e.message.slice(0,80)+"), data tetap disimpan."}
  var rec={ts:Date.now(),trialAt:new Date($("dt").value).getTime()||Date.now(),project:$("proj").value,by:$("by").value,stage:$("stage").value,method:$("method").value,pos:$("pos").value,mc:$("mc").value.trim(),
-  qty:Number($("qty").value)||0,ng:Number($("ng").value)||0,color:$("color").value,res:$("res").value,params:params,cat:$("cat").value.trim(),issue:$("issue").value.trim(),act:$("act").value.trim(),photos:photos,mp:mp,no:Number($("tno").value)||1};
+  qty:Number($("qty").value)||0,ng:Number($("ng").value)||0,color:$("color").value,paint:$("paint").value.trim(),res:$("res").value,params:params,cat:$("cat").value.trim(),issue:$("issue").value.trim(),act:$("act").value.trim(),photos:photos,mp:mp,no:Number($("tno").value)||1};
  try{await api("POST","trials",toT(rec));last.t="";await loadT();$("msg").textContent="Tersimpan ✓";toast("Trial tersimpan");
   ["qty","issue","act","ph_in","cat","mp_hmi","mp_speed","mp_angin","mp_proses"].forEach(function(k){$(k).value=""});$("ng").value=0;$("dt").value=nowLocal();suggestNo();
-  document.querySelectorAll("#params input").forEach(function(i){i.value=""});setCats()}catch(e){$("msg").textContent="Gagal menyimpan: "+e.message.slice(0,120)}
+  document.querySelectorAll("#params input,#params select").forEach(function(i){i.value=""});setCats()}catch(e){$("msg").textContent="Gagal menyimpan: "+e.message.slice(0,120)}
  btn.disabled=false};
 
 /* project */
 function libParts(){var u=[];projs.forEach(function(p){p.parts.forEach(function(x){if(u.indexOf(x)<0&&newParts.indexOf(x)<0)u.push(x)})});return u}
 function renderProj(){
- $("pcur").innerHTML=newParts.map(function(x,i){return "<button class=chip data-i=\""+i+"\">"+esc(x)+" ✕</button>"}).join("")||"<span class=sub>Belum ada part.</span>";
- document.querySelectorAll("#pcur button").forEach(function(b){b.onclick=function(){newParts.splice(+b.dataset.i,1);renderProj()}});
- var l=libParts();$("plib").innerHTML=l.length?l.map(function(x){return "<button class=\"chip add\" data-p=\""+esc(x)+"\">＋ "+esc(x)+"</button>"}).join(""):"Belum ada.";
- document.querySelectorAll("#plib button").forEach(function(b){b.onclick=function(){newParts.push(b.dataset.p);renderProj()}});
- $("plist").innerHTML=projs.map(function(p){return "<div class=hot-row style=\"margin-bottom:8px;display:block\"><b>"+esc(p.name)+"</b><div class=sub>"+esc(p.parts.join(", ")||"-")+"</div><div class=sub>Release: "+esc(p.rs)+" · Target "+fd(p.rt)+" · Aktual "+fd(p.rd)+"</div></div>"}).join("")||"<span class=sub>Belum ada project.</span>"}
-$("padd").onclick=function(){var v=$("pp").value.trim();if(v&&newParts.indexOf(v)<0)newParts.push(v);$("pp").value="";renderProj()};
+ $("pcur").innerHTML=newParts.map(function(x,i){return "<button class=chip data-i=\""+i+"\">"+esc(x)+((newColors[x]||[]).length?" ("+esc(newColors[x].join(", "))+")":"")+" ✕</button>"}).join("")||"<span class=sub>Belum ada part.</span>";
+ document.querySelectorAll("#pcur button").forEach(function(b){b.onclick=function(){delete newColors[newParts[+b.dataset.i]];newParts.splice(+b.dataset.i,1);renderProj()}});
+ var l=libParts();$("plib").innerHTML=l.length?l.map(function(x){return "<button class=\"chip add\" data-p=\""+esc(x)+"\">＋ "+esc(x)+(libColors(x).length?" ("+esc(libColors(x).join(", "))+")":"")+"</button>"}).join(""):"Belum ada.";
+ document.querySelectorAll("#plib button").forEach(function(b){b.onclick=function(){newParts.push(b.dataset.p);var c=libColors(b.dataset.p);if(c.length)newColors[b.dataset.p]=c;renderProj()}});
+ $("plist").innerHTML=projs.map(function(p){return "<div class=hot-row style=\"margin-bottom:8px;display:block\"><b>"+esc(p.name)+"</b><div class=sub>"+esc(p.parts.join(", ")||"-")+"</div><div class=sub>Release: "+esc(p.rs)+" · Target "+fd(p.rt)+" · Aktual "+fd(p.rd)+"</div><div class=sub>Decoplan: "+planOf(p.name).length+" baris</div></div>"}).join("")||"<span class=sub>Belum ada project.</span>"}
+$("padd").onclick=function(){var v=$("pp").value.trim();if(v&&newParts.indexOf(v)<0){newParts.push(v);var cl=$("pc").value.split(",").map(function(x){return x.trim()}).filter(Boolean);if(cl.length)newColors[v]=cl}$("pp").value="";$("pc").value="";renderProj()};
 $("psave").onclick=async function(){var n=$("pn").value.trim();if(!n){$("pmsg").textContent="Isi nama project.";return}
  if(projs.some(function(p){return p.name.toLowerCase()==n.toLowerCase()})){$("pmsg").textContent="Nama project sudah ada.";return}
- try{await api("POST","projects",{name:n,parts:newParts.slice(),ts:Date.now()});last.p="";await loadP();$("proj").value=n;setParts();$("pn").value="";newParts=[];$("pmsg").textContent="Project tersimpan ✓";renderProj()}catch(e){$("pmsg").textContent="Gagal: "+e.message.slice(0,120)}};
+ try{await api("POST","projects",{name:n,parts:newParts.slice(),colors:newColors,ts:Date.now()});last.p="";await loadP();$("proj").value=n;setParts();$("pn").value="";newParts=[];newColors={};$("pmsg").textContent="Project tersimpan ✓";renderProj()}catch(e){$("pmsg").textContent="Gagal: "+e.message.slice(0,120)}};
 
 /* filter + data */
 function filtered(){var p=$("fp").value,a=$("fd1").value,b=$("fd2").value,m=$("fm").value,r=$("fr").value,q=$("fq").value.toLowerCase();
@@ -735,12 +749,12 @@ function rDash(){var f=filtered(),c=function(r){return f.filter(function(x){retu
  var mx=cs.length?ct[cs[0]]:1;$("topKendala").innerHTML=cs.slice(0,8).map(function(k,i){return "<div class=barrow><div class=lbl>"+esc(k)+"</div><div class=track><div class=fill style=\"width:"+Math.max(6,ct[k]/mx*100)+"%;background:"+BARC[i%7]+"\"></div></div><div class=val>"+ct[k]+"</div></div>"}).join("")||"<div class=sub>Belum ada kendala.</div>";
  var pn=Array.from(new Set(f.map(function(x){return x.project||"-"})));
  mk("cProj",{type:"bar",data:{labels:pn,datasets:[["Pass","#4ecb8e"],["Fail","#f0687c"],["Hold","#f6b73c"]].map(function(a){return {label:a[0],backgroundColor:a[1],data:pn.map(function(p){return f.filter(function(x){return (x.project||"-")==p&&x.res==a[0]}).length})}})},options:{maintainAspectRatio:false,scales:{x:{stacked:true},y:{stacked:true,ticks:{precision:0}}}}})}
-function rData(){var f=filtered(),s=summary(f),pg=progress(f),sc=schedule();
+function rData(){var f=filtered(),s=summary(f),pg=progress(f),sc=schedule();renderPlanCmp();
  $("sch").innerHTML=sc.length?"<table><tr><th>Project</th><th>Trial pertama</th><th>EP</th><th>FEP</th><th>PP2K</th><th>PP3K</th><th>Trial terakhir</th><th>Target release</th><th>Release aktual</th><th>Status</th><th>Durasi</th></tr>"+sc.map(function(o){return "<tr><td><b>"+esc(o.name)+"</b>"+(o.rn?"<div class=sub>Catatan: "+esc(o.rn)+"</div>":"")+"</td><td>"+(o.first?day(o.first):"-")+"</td><td>"+stTxt(o.st.EP)+"</td><td>"+stTxt(o.st.FEP)+"</td><td>"+stTxt(o.st.PP2K)+"</td><td>"+stTxt(o.st.PP3K)+"</td><td>"+(o.last?day(o.last):"-")+"</td><td>"+fd(o.rt)+"</td><td>"+fd(o.rd)+"</td><td><span class=\"pill "+(o.rs=="Released"?"Pass":o.rs=="Siap release"?"Hold":"")+"\">"+esc(o.rs)+"</span></td><td>"+durTxt(o)+"</td></tr>"}).join("")+"</table>":"<div class=sub>Belum ada project.</div>";
  $("prog").innerHTML=pg.length?"<table><tr><th>Project</th><th>Tahap</th><th>Metode / Part</th><th>Riwayat trial</th><th>Hasil akhir</th><th>Trial OK</th></tr>"+pg.map(function(o){return "<tr><td>"+esc(o.project)+"</td><td>"+esc(o.stage)+"</td><td>"+esc(o.method)+"<div class=sub>"+esc(o.pos)+"</div></td><td>"+o.t.map(function(x){return "<span class=\"pill "+x.res+"\">T"+(x.no||1)+" "+x.res+"</span>"}).join(" → ")+"</td><td><span class=\"pill "+(o.ok?"Pass":o.t[o.t.length-1].res)+"\">"+esc(o.final)+"</span></td><td>"+(o.ok?"T"+(o.ok.no||1)+" · "+day(T(o.ok)):"-")+"</td></tr>"}).join("")+"</table>":"<div class=sub>Belum ada data.</div>";
  $("sum").innerHTML=s.length?"<table><tr><th>Project</th><th>Kendala</th><th>Kejadian</th><th>Fail</th><th>Hold</th><th>NG pcs</th><th>Part terdampak</th><th>Terakhir</th></tr>"+s.map(function(o){return "<tr><td>"+esc(o.project)+"</td><td>"+esc(o.cat)+(o.detail?"<div class=sub>"+esc(o.detail)+"</div>":"")+"</td><td>"+o.n+"</td><td>"+o.fail+"</td><td>"+o.hold+"</td><td>"+o.ng+"</td><td>"+esc(o.parts.join(", "))+"</td><td>"+day(o.last)+"</td></tr>"}).join("")+"</table>":"<div class=sub>Belum ada kendala tercatat.</div>";
- $("log").innerHTML=f.length?"<table><tr><th>Waktu trial</th><th>Project</th><th>Tahap</th><th>Metode / Part</th><th>Trial</th><th>Mesin</th><th>Qty / NG</th><th>Warna</th><th>Hasil</th><th>Kendala &amp; tindakan</th><th>Oleh</th><th>Foto produk</th><th>Foto mesin</th></tr>"+f.map(function(x){
-  return "<tr class=clk data-id=\""+esc(x.id)+"\"><td>"+fmt(T(x))+"</td><td>"+esc(x.project)+"</td><td>"+esc(x.stage)+"</td><td>"+esc(x.method)+"<div class=sub>"+esc(x.pos)+"</div></td><td>T"+(x.no||1)+"</td><td>"+esc(x.mc)+"</td><td>"+x.qty+" / "+x.ng+"</td><td>"+esc(x.color||"-")+"</td><td><span class=\"pill "+x.res+"\">"+x.res+"</span></td><td>"+(x.cat&&x.cat!="Tidak ada kendala"?"<b>"+esc(x.cat)+"</b> "+esc(x.issue):"-")+(x.act?"<div class=sub>Tindakan: "+esc(x.act)+"</div>":"")+"</td><td>"+esc(x.by)+"</td><td>"+(x.photos||[]).map(function(u){return "<img class=table-thumb data-zoom=\""+esc(u)+"\" src=\""+esc(u)+"\">"}).join(" ")+"</td><td>"+mpThumbs(x)+"</td></tr>"}).join("")+"</table>":"<div class=sub>Belum ada data.</div>";labelT("sch");labelT("prog");labelT("sum");labelT("log")}
+ $("log").innerHTML=f.length?"<table><tr><th>Waktu trial</th><th>Project</th><th>Tahap</th><th>Metode / Part</th><th>Trial</th><th>Mesin</th><th>Qty / NG</th><th>Warna cat / hasil</th><th>Hasil</th><th>Kendala &amp; tindakan</th><th>Oleh</th><th>Foto produk</th><th>Foto mesin</th></tr>"+f.map(function(x){
+  return "<tr class=clk data-id=\""+esc(x.id)+"\"><td>"+fmt(T(x))+"</td><td>"+esc(x.project)+"</td><td>"+esc(x.stage)+"</td><td>"+esc(x.method)+"<div class=sub>"+esc(x.pos)+"</div></td><td>T"+(x.no||1)+"</td><td>"+esc(x.mc)+"</td><td>"+x.qty+" / "+x.ng+"</td><td>"+esc(x.paint||"-")+"<div class=sub>"+esc(x.color||"-")+"</div></td><td><span class=\"pill "+x.res+"\">"+x.res+"</span></td><td>"+(x.cat&&x.cat!="Tidak ada kendala"?"<b>"+esc(x.cat)+"</b> "+esc(x.issue):"-")+(x.act?"<div class=sub>Tindakan: "+esc(x.act)+"</div>":"")+"</td><td>"+esc(x.by)+"</td><td>"+(x.photos||[]).map(function(u){return "<img class=table-thumb data-zoom=\""+esc(u)+"\" src=\""+esc(u)+"\">"}).join(" ")+"</td><td>"+mpThumbs(x)+"</td></tr>"}).join("")+"</table>":"<div class=sub>Belum ada data.</div>";labelT("sch");labelT("prog");labelT("sum");labelT("log")}
 function labelT(id){document.querySelectorAll("#"+id+" table").forEach(function(t){var h=Array.from(t.rows[0].cells).map(function(c){return c.textContent});Array.from(t.rows).slice(1).forEach(function(r){Array.from(r.cells).forEach(function(c,i){c.setAttribute("data-l",h[i]||"")})})})}
 var CAT=[["p","Foto Produk"],["hmi","Parameter Mesin – HMI"],["speed","Parameter Mesin – Speed"],["angin","Parameter Mesin – Angin"],["proses","Parameter Mesin – Proses"]];
 var MPK=[["hmi","HMI"],["speed","Speed"],["angin","Angin"],["proses","Proses"]];
@@ -759,15 +773,15 @@ document.addEventListener("keydown",function(e){if(e.key=="Escape")closeModal()}
 function openDetail(id){var x=rows.filter(function(r){return r.id==id})[0];if(!x)return;
  var pr=Object.keys(x.params||{}),ph=CAT.filter(function(c){return photosOf(x,c[0]).length});
  var kv=function(l,v){return "<div class=field><label>"+l+"</label><div style=\"font-weight:700\">"+(v===""||v==null?"-":esc(v))+"</div></div>"};
- openModal("<h2>Detail Trial <span><button class=\"btn small\" id=\"dEdit\" type=\"button\">✎ Edit</button> <button class=\"btn ghost small\" id=\"dClose\" type=\"button\">Tutup</button></span></h2><div class=fg>"+kv("Project",x.project)+kv("Tahap",x.stage)+kv("Metode",x.method)+kv("Part",x.pos)+kv("Trial ke-","T"+(x.no||1))+kv("Waktu trial",fmt(T(x)))+kv("Mesin / Line",x.mc)+kv("Diupdate oleh",x.by)+kv("Qty trial",x.qty)+kv("Qty NG",x.ng+(x.qty?" ("+(x.ng/x.qty*100).toFixed(1)+"%)":""))+kv("Warna",x.color)+"<div class=field><label>Hasil</label><span class=\"pill "+x.res+"\">"+x.res+"</span></div></div>"
+ openModal("<h2>Detail Trial <span><button class=\"btn small\" id=\"dEdit\" type=\"button\">✎ Edit</button> <button class=\"btn ghost small\" id=\"dClose\" type=\"button\">Tutup</button></span></h2><div class=fg>"+kv("Project",x.project)+kv("Tahap",x.stage)+kv("Metode",x.method)+kv("Part",x.pos)+kv("Trial ke-","T"+(x.no||1))+kv("Waktu trial",fmt(T(x)))+kv("Mesin / Line",x.mc)+kv("Diupdate oleh",x.by)+kv("Qty trial",x.qty)+kv("Qty NG",x.ng+(x.qty?" ("+(x.ng/x.qty*100).toFixed(1)+"%)":""))+kv("Warna cat",x.paint)+kv("Hasil warna",x.color)+"<div class=field><label>Hasil</label><span class=\"pill "+x.res+"\">"+x.res+"</span></div></div>"
   +"<div class=gh>Parameter aktual</div>"+(pr.length?"<div class=fg>"+pr.map(function(k){return kv(k,x.params[k])}).join("")+"</div>":"<div class=sub>Tidak ada parameter diisi.</div>")
   +"<div class=gh>Kendala</div>"+kv("Kategori",x.cat)+kv("Detail kendala",x.issue)+kv("Tindakan / perbaikan",x.act)
   +"<div class=gh>Foto</div>"+(ph.length?ph.map(function(c){return "<div class=sub style=\"margin:6px 0\">"+c[1]+"</div><div class=gallery-grid>"+photosOf(x,c[0]).map(function(u){return "<div class=photo-card><img class=gimg data-zoom=\""+esc(u)+"\" src=\""+esc(u)+"\"></div>"}).join("")+"</div>"}).join(""):"<div class=sub>Tidak ada foto.</div>"));
  $("dClose").onclick=closeModal;$("dEdit").onclick=function(){openEdit(x)}}
-function eParams(m,vals){$("e_params").innerHTML=PAR[m].map(function(k){return "<div class=field><label>"+k+"</label><input class=ep data-k=\""+esc(k)+"\" value=\""+esc(vals[k]||"")+"\"></div>"}).join("")}
+function eParams(m,vals){$("e_params").innerHTML=PAR[m].map(function(k){return pfield(k,pv(vals,k),"ep")}).join("")}
 function eThumbs(){CAT.forEach(function(c){var arr=c[0]=="p"?ed.photos:(ed.mp[c[0]]=ed.mp[c[0]]||[]);$("e_x_"+c[0]).innerHTML=arr.map(function(u,i){return "<span style=\"display:inline-block;position:relative;margin:2px 8px 6px 0\"><img class=table-thumb data-zoom=\""+esc(u)+"\" src=\""+esc(u)+"\"><button type=button class=chip style=\"position:absolute;top:-6px;right:-6px;padding:0 6px\" data-rm=\""+c[0]+"|"+i+"\">✕</button></span>"}).join("")||"<span class=sub>Belum ada.</span>"})}
 $("mbody").addEventListener("click",function(e){var t=e.target;if(t.dataset&&t.dataset.rm&&ed){var a=t.dataset.rm.split("|"),arr=a[0]=="p"?ed.photos:ed.mp[a[0]];arr.splice(+a[1],1);eThumbs()}});
-function openEdit(x){ed={id:x.id,ts:x.ts,photos:(x.photos||[]).slice(),mp:JSON.parse(JSON.stringify(x.mp||{}))};
+function openEdit(x){ed={id:x.id,ts:x.ts,photos:(x.photos||[]).slice(),mp:JSON.parse(JSON.stringify(x.mp||{})),p0:x.params||{},m0:x.method};
  openModal("<h2>Edit Trial</h2><div class=fg>"
  +"<div class=field><label>Project</label><select id=e_proj>"+selOpts(projs.map(function(p){return p.name}),x.project)+"</select></div>"
  +"<div class=field><label>Diupdate oleh</label><select id=e_by>"+selOpts(BYS,x.by)+"</select></div>"
@@ -775,11 +789,12 @@ function openEdit(x){ed={id:x.id,ts:x.ts,photos:(x.photos||[]).slice(),mp:JSON.p
  +"<div class=field><label>Tahap</label><select id=e_stage>"+selOpts(STAGES,x.stage)+"</select></div>"
  +"<div class=field><label>Metode</label><select id=e_method>"+selOpts(["Handspray","Pad Print"],x.method)+"</select></div>"
  +"<div class=field><label>Part</label><select id=e_pos>"+selOpts(allParts(),x.pos)+"</select></div>"
+ +"<div class=field><label>Warna cat</label><input id=e_paint list=e_paintl value=\""+esc(x.paint||"")+"\"><datalist id=e_paintl>"+allPaints().map(function(c){return "<option value=\""+esc(c)+"\">"}).join("")+"</datalist></div>"
  +"<div class=field><label>Trial ke-</label><select id=e_tno>"+selOpts(Array.from({length:10},function(_,i){return String(i+1)}),String(x.no||1))+"</select></div>"
  +"<div class=field><label>Mesin / Line</label><input id=e_mc value=\""+esc(x.mc)+"\"></div>"
  +"<div class=field><label>Qty trial (pcs)</label><input id=e_qty type=number value=\""+x.qty+"\"></div>"
  +"<div class=field><label>Qty NG (pcs)</label><input id=e_ng type=number value=\""+x.ng+"\"></div>"
- +"<div class=field><label>Warna</label><select id=e_color>"+selOpts(["OK","Revisi mixed"],x.color)+"</select></div>"
+ +"<div class=field><label>Hasil warna</label><select id=e_color>"+selOpts(["OK","Revisi mixed"],x.color)+"</select></div>"
  +"<div class=field><label>Hasil</label><select id=e_res>"+selOpts(["Pass","Fail","Hold"],x.res)+"</select></div></div>"
  +"<div class=gh>Parameter aktual</div><div class=fg id=e_params></div>"
  +"<div class=gh>Kendala</div><div class=field><label>Kategori kendala</label><input id=e_cat list=catl value=\""+esc(x.cat)+"\"></div>"
@@ -791,9 +806,9 @@ function openEdit(x){ed={id:x.id,ts:x.ts,photos:(x.photos||[]).slice(),mp:JSON.p
  $("e_method").onchange=function(){var v={};document.querySelectorAll(".ep").forEach(function(i){v[i.dataset.k]=i.value});eParams($("e_method").value,v)};
  $("eCancel").onclick=function(){openDetail(x.id)};$("eSave").onclick=saveEdit}
 async function saveEdit(){var b=$("eSave");b.disabled=true;$("eMsg").textContent="Menyimpan…";
- try{var params={};document.querySelectorAll(".ep").forEach(function(i){if(i.value.trim())params[i.dataset.k]=i.value.trim()});
+ try{var params={};if(ed.m0==$("e_method").value)Object.keys(ed.p0).forEach(function(k){if(k!="Din cup (detik)"&&PAR[ed.m0].indexOf(k)<0)params[k]=ed.p0[k]});document.querySelectorAll(".ep").forEach(function(i){if(i.value.trim())params[i.dataset.k]=i.value.trim()});
   for(var c of CAT){var fl=$("e_f_"+c[0]).files,arr=c[0]=="p"?ed.photos:(ed.mp[c[0]]=ed.mp[c[0]]||[]);for(var i=0;i<fl.length;i++)arr.push(await upPhoto(fl[i]))}
-  var rec={ts:ed.ts,trialAt:new Date($("e_dt").value).getTime()||Date.now(),project:$("e_proj").value,by:$("e_by").value,stage:$("e_stage").value,method:$("e_method").value,pos:$("e_pos").value,mc:$("e_mc").value.trim(),qty:Number($("e_qty").value)||0,ng:Number($("e_ng").value)||0,color:$("e_color").value,res:$("e_res").value,params:params,cat:$("e_cat").value.trim(),issue:$("e_issue").value.trim(),act:$("e_act").value.trim(),photos:ed.photos,mp:ed.mp,no:Number($("e_tno").value)||1},id=ed.id;
+  var rec={ts:ed.ts,trialAt:new Date($("e_dt").value).getTime()||Date.now(),project:$("e_proj").value,by:$("e_by").value,stage:$("e_stage").value,method:$("e_method").value,pos:$("e_pos").value,mc:$("e_mc").value.trim(),qty:Number($("e_qty").value)||0,ng:Number($("e_ng").value)||0,color:$("e_color").value,paint:$("e_paint").value.trim(),res:$("e_res").value,params:params,cat:$("e_cat").value.trim(),issue:$("e_issue").value.trim(),act:$("e_act").value.trim(),photos:ed.photos,mp:ed.mp,no:Number($("e_tno").value)||1},id=ed.id;
   await api("PATCH","trials",toT(rec),"?id=eq."+id);last.t="";await loadT();toast("Perubahan tersimpan ✓");openDetail(id)}
  catch(e){$("eMsg").textContent="Gagal: "+e.message.slice(0,120);b.disabled=false}}
 $("log").addEventListener("click",function(e){if(e.target.dataset&&e.target.dataset.zoom)return;var tr=e.target.closest("tr[data-id]");if(tr)openDetail(tr.dataset.id)});
@@ -816,6 +831,74 @@ function fillSchedule(ws,names){var sc=schedule(names);widths(ws,[2.6,5,22,14,14
  ["No","Project","Trial Pertama","Trial Terakhir","EP","FEP","PP2K","PP3K","Target Release","Release Aktual","Status Release","Durasi","Catatan Release"].forEach(function(h,i){put(ws,3,2+i,2+i,h,{b:true,bd:true,fill:GREY,h:"center"})});
  sc.forEach(function(o,i){[i+1,o.name,o.first?day(o.first):"-",o.last?day(o.last):"-",stTxt(o.st.EP),stTxt(o.st.FEP),stTxt(o.st.PP2K),stTxt(o.st.PP3K),fd(o.rt),fd(o.rd),o.rs,durTxt(o),o.rn].forEach(function(a,j){put(ws,4+i,2+j,2+j,a,{bd:true,h:j==0||j==2||j==3||j>=8&&j<=11?"center":"left"})})})}
 
+/* Parameter, warna cat, dokumen lab */
+function pfield(k,v,c){var a=" data-k=\""+esc(k)+"\""+(c?" class="+c:"");return "<div class=field><label>"+esc(k)+"</label>"+(SELOPT[k]?"<select"+a+"><option value=\"\">-</option>"+SELOPT[k].map(function(o){return "<option"+(o==v?" selected":"")+">"+o+"</option>"}).join("")+"</select>":"<input"+a+" value=\""+esc(v)+"\">")+"</div>"}
+function pv(vals,k){return vals[k]||(k=="CT Cat"?vals["Din cup (detik)"]:"")||""}
+function pval(x,k){if(k=="Warna Cat")return x.paint||"";return pv(x.params||{},k)}
+function libColors(part){var c=[];projs.forEach(function(p){if(!c.length&&p.co&&p.co[part]&&p.co[part].length)c=p.co[part].slice()});return c}
+function paintOpts(pj,pos){var p=projs.filter(function(x){return x.name==pj})[0],c=p&&p.co&&p.co[pos]||[];if(!c.length)c=libColors(pos);return c.concat(["Cat trial"])}
+function allPaints(){var u=[];projs.forEach(function(p){Object.keys(p.co||{}).forEach(function(k){p.co[k].forEach(function(c){if(u.indexOf(c)<0)u.push(c)})})});return u.concat(["Cat trial"])}
+function setPaint(){var k=$("proj").value+"|"+$("pos").value,chg=k!=pk;if(chg){pk=k;$("paint").value=""}$("paintl").innerHTML=paintOpts($("proj").value,$("pos").value).map(function(c){return "<option value=\""+esc(c)+"\">"}).join("");planSync(chg)}
+function fillCol(){var p=projs.filter(function(x){return x.name==$("cp").value})[0];$("cpBox").innerHTML=p&&p.parts.length?p.parts.map(function(part){return "<div class=field><label>"+esc(part)+"</label><input class=cpi data-p=\""+esc(part)+"\" value=\""+esc(((p.co||{})[part]||[]).join(", "))+"\" placeholder=\"mis. Hitam, Putih, Merah\"></div>"}).join(""):"<div class=sub>Project belum punya part.</div>"}
+$("cp").onchange=fillCol;
+$("csave").onclick=async function(){var p=projs.filter(function(x){return x.name==$("cp").value})[0];if(!p){$("cmsg").textContent="Pilih project dulu.";return}
+ var co={};document.querySelectorAll(".cpi").forEach(function(i){var l=i.value.split(",").map(function(x){return x.trim()}).filter(Boolean);if(l.length)co[i.dataset.p]=l});
+ try{await api("PATCH","projects",{colors:co},"?id=eq."+p.id);last.p="";await loadP();fillCol();$("cmsg").textContent="Tersimpan ✓";toast("Warna cat tersimpan")}catch(e){$("cmsg").textContent="Gagal: "+e.message.slice(0,140)}};
+function rLabDocs(){$("labDocs").innerHTML=workDocs.map(function(u,i){return "<span style=\"display:inline-block;position:relative;margin:2px 8px 6px 0\"><img class=table-thumb data-zoom=\""+esc(u)+"\" src=\""+esc(u)+"\"><button type=button class=chip style=\"position:absolute;top:-6px;right:-6px;padding:0 6px\" data-rmd=\""+i+"\">✕</button></span>"}).join("")||"<span class=sub>Belum ada foto dokumen.</span>"}
+$("labDocs").addEventListener("click",function(e){var t=e.target;if(t.dataset&&t.dataset.rmd){workDocs.splice(+t.dataset.rmd,1);rLabDocs()}});
+async function labDocSheet(wb,proj){var d=secs.filter(function(y){return y.project==proj&&y.section=="lab_docs"&&y.rows.length});if(!d.length)return;
+ var ws=wb.addWorksheet(sname(wb,proj,"Lab Docs"),{views:[{showGridLines:false}]});widths(ws,[2.6,26,26,26,26,26]);var r=1;put(ws,r,2,6,proj+" – Dokumen Lab",{b:true,sz:13,fill:BLUE});r+=2;
+ for(var y of d){put(ws,r,2,6,"Tahap: "+y.stage,{b:true,fill:GREY,bd:true});r++;var us=y.rows.map(function(x){return x[0]});
+  for(var i=0;i<us.length;i+=5){var ch=us.slice(i,i+5);ws.getRow(r).height=150;
+   for(var j=0;j<ch.length;j++){try{var im=await imgBuf(ch[j]),sc=Math.min(170/im.w,190/im.h),id=wb.addImage({buffer:im.buf,extension:"jpeg"});ws.addImage(id,{tl:{col:1+j+.05,row:r-1+.05},ext:{width:im.w*sc,height:im.h*sc}})}catch(e){put(ws,r,2+j,2+j,ch[j],{sz:8})}}
+   r++}r++}}
+
+/* Decoplan (acuan) */
+function en(s){return String(s==null?"":s).replace(/\s*\/\s*[^\/()]*[\u3000-\u9fff\uff00-\uffef][^\/()]*/g,function(m){return /\s$/.test(m)?" ":""}).replace(/\s+/g," ").trim()}
+function mapM(s){return /pad/i.test(s)?"Pad Print":/mask|spray/i.test(s)?"Handspray":String(s||"").trim()}
+function planOf(name){var x=secs.filter(function(y){return y.project==name&&y.section=="decoplan"})[0];return x?x.rows.map(function(r){return {job:r[0],pos:r[1],part:r[2],method:r[3],proc:r[4],color:r[5]}}):[]}
+function parsePlan(R){var hi=-1;for(var i=0;i<R.length&&i<30;i++){if(R[i].some(function(c){return /project\s*id/i.test(c)})&&R[i].some(function(c){return /position/i.test(c)})){hi=i;break}}
+ if(hi<0)return null;var H=R[hi],ix=function(re){for(var j=0;j<H.length;j++)if(re.test(H[j]))return j;return -1};
+ var c={p:ix(/project\s*id/i),j:ix(/job\s*flow/i),pos:ix(/^position/i),part:ix(/^(face|part)/i),m:ix(/book\s*mask|method|metode|process\s*type/i),n:ix(/number\s*process|tampo/i),col:ix(/^colou?r/i)};
+ if(c.part<0&&c.pos>=0)c.part=c.pos+1;if(c.m<0)c.m=c.part+1;
+ var out=[],prev="";for(var i=hi+1;i<R.length;i++){var r=R[i],g=function(k){return k<0||r[k]==null?"":String(r[k]).trim()},pr=g(c.p)||prev;if(!g(c.part)&&!g(c.pos))continue;prev=pr;
+  out.push({project:pr,job:g(c.j),pos:g(c.pos),part:g(c.part),method:mapM(g(c.m)),proc:g(c.n),color:g(c.col)})}
+ return out.filter(function(x){return x.project&&x.part})}
+async function importPlan(list){var by={},msg=[];list.forEach(function(x){(by[x.project]=by[x.project]||[]).push(x)});
+ for(var name of Object.keys(by)){var L=by[name],parts=[],co={};
+  L.forEach(function(x){var pn=en(x.part),cn=en(x.color);if(pn&&parts.indexOf(pn)<0)parts.push(pn);if(pn&&cn){co[pn]=co[pn]||[];if(co[pn].indexOf(cn)<0)co[pn].push(cn)}});
+  var ex=projs.filter(function(p){return p.name==name})[0];
+  if(!ex)await api("POST","projects",{name:name,parts:parts,colors:co,ts:Date.now()});
+  else{var np=ex.parts.slice();parts.forEach(function(p){if(np.indexOf(p)<0)np.push(p)});var nc=JSON.parse(JSON.stringify(ex.co||{}));Object.keys(co).forEach(function(k){nc[k]=nc[k]||[];co[k].forEach(function(c){if(nc[k].indexOf(c)<0)nc[k].push(c)})});await api("PATCH","projects",{parts:np,colors:nc},"?id=eq."+ex.id)}
+  await api("POST","sections",[{project:name,stage:"ALL",section:"decoplan",rows:L.map(function(x){return [x.job,x.pos,x.part,x.method,x.proc,x.color]}),ts:Date.now()}],"?on_conflict=project,stage,section","resolution=merge-duplicates,return=minimal");
+  msg.push(name+": "+L.length+" baris, "+parts.length+" part")}
+ last.p="";last.s="";await loadP();await loadS();return "Terimpor → "+msg.join(" · ")}
+$("dpbtn").onclick=function(){$("dpf").click()};
+$("dpf").onchange=async function(){var f=this.files[0];this.value="";if(!f)return;$("dpmsg").textContent="Membaca file…";
+ try{var R=null;if(/\.csv$/i.test(f.name)){R=parseCSV((await f.text()).replace(/^\ufeff/,""))}
+  else{var wb=new ExcelJS.Workbook();await wb.xlsx.load(await f.arrayBuffer());wb.eachSheet(function(ws){if(R)return;var a=[];ws.eachRow({includeEmpty:false},function(row){var r=[];for(var c=1;c<=ws.columnCount;c++)r.push(cellText(row.getCell(c).value));a.push(r)});if(parsePlan(a))R=a})}
+  var L=R&&parsePlan(R);if(!L||!L.length){$("dpmsg").textContent="Format tidak dikenali. Butuh kolom Project ID, Position, Face/Part, Number Process, Color.";return}
+  $("dpmsg").textContent=await importPlan(L);toast("Decoplan diimpor")}catch(e){$("dpmsg").textContent="Gagal impor: "+e.message.slice(0,140)}};
+function planSync(fromPart){var pn=$("proj").value,ps=$("pos").value,pl=planOf(pn).filter(function(x){return en(x.part)==ps}),box=$("planRef");
+ if(!pl.length){box.innerHTML="";return}
+ if(fromPart){var ms=Array.from(new Set(pl.map(function(x){return x.method})));if(ms.length==1&&PAR[ms[0]]&&$("method").value!=ms[0]){$("method").value=ms[0];setMethod();suggestNo()}}
+ var pt=$("paint").value.trim().toLowerCase(),mt=pl.filter(function(x){return en(x.color).toLowerCase()==pt})[0]||(pl.length==1?pl[0]:null);
+ box.innerHTML="Acuan Decoplan: "+pl.map(function(x){return "<span class=chip style=\""+(mt===x?"background:var(--green-soft);color:#1f9d63":"")+"\">J"+esc(x.job)+" · "+esc(en(x.pos))+" · "+esc(x.method)+(x.method=="Pad Print"&&x.proc?" · Tampo "+esc(x.proc)+"×":"")+" · "+esc(en(x.color))+"</span>"}).join("");
+ if(mt&&$("method").value=="Pad Print"&&mt.proc){var tf=document.querySelector("#params [data-k=\"Jumlah tampo (kali)\"]");if(tf&&!tf.value)tf.value=mt.proc}}
+$("paint").oninput=$("paint").onchange=function(){planSync(false)};
+function planCmp(names){var out=[];projs.forEach(function(p){if(names&&names.indexOf(p.name)<0)return;var pl=planOf(p.name).sort(function(a,b){return (Number(a.job)||0)-(Number(b.job)||0)});
+ pl.forEach(function(x){var pn=en(x.part),cn=en(x.color).toLowerCase(),many=pl.filter(function(y){return en(y.part)==pn}).length>1,
+  tr=rows.filter(function(t){return t.project==p.name&&t.pos==pn&&(!many||String(t.paint||"").toLowerCase()==cn)}).sort(function(a,b){return T(a)-T(b)}),l=tr[tr.length-1],ok=!!l&&l.res=="Pass";
+  var ta=l?pval(l,"Jumlah tampo (kali)"):"",kes="-";
+  if(l){var bad=[];if(x.method=="Pad Print"&&x.proc&&String(ta).trim()!=String(x.proc).trim())bad.push("Tampo "+(ta||"kosong")+" (acuan "+x.proc+")");if(!many&&cn&&String(l.paint||"").toLowerCase()!=cn)bad.push("Cat: "+(l.paint||"kosong"));kes=bad.length?bad.join("; "):"Sesuai"}
+  out.push({project:p.name,x:x,n:tr.length,l:l,ok:ok,ta:ta,pa:l?l.paint||"":"",kes:kes,st:!l?"Belum trial":(ok?"OK":l.res)+" · "+l.stage+" T"+(l.no||1)})})});return out}
+function renderPlanCmp(){var pc=planCmp($("fp").value?[$("fp").value]:null);
+ $("dplan").innerHTML=pc.length?"<table><tr><th>Project</th><th>Job</th><th>Position / Part</th><th>Metode</th><th>Tampo (acuan)</th><th>Warna (acuan)</th><th>Jml trial</th><th>Status terakhir</th><th>Tampo aktual</th><th>Cat aktual</th><th>Kesesuaian</th></tr>"+pc.map(function(o){var x=o.x;return "<tr><td>"+esc(o.project)+"</td><td>"+esc(x.job)+"</td><td><b>"+esc(en(x.part))+"</b><div class=sub>"+esc(en(x.pos))+"</div></td><td>"+esc(x.method)+"</td><td>"+(x.method=="Pad Print"&&x.proc?esc(x.proc)+"×":"-")+"</td><td>"+esc(en(x.color))+"</td><td>"+o.n+"</td><td><span class=\"pill "+(!o.l?"":o.ok?"Pass":o.l.res)+"\">"+esc(o.st)+"</span></td><td>"+(o.ta?esc(o.ta)+"×":"-")+"</td><td>"+esc(o.pa||"-")+"</td><td>"+esc(o.kes)+"</td></tr>"}).join("")+"</table>":"<div class=sub>Belum ada data Decoplan. Impor lewat tab Project.</div>";labelT("dplan")}
+function fillPlan(ws,pc){widths(ws,[2.6,5,16,10,28,28,12,14,26,10,26,12,18,32]);put(ws,1,2,10,"Decoplan – Acuan Release Trial PP2K",{b:true,sz:13,fill:BLUE});
+ ["No","Project","Job Flow","Position","Part","Metode","Number Process (Tampo)","Warna (Acuan)","Jml Trial","Status Terakhir","Tampo Aktual","Cat Aktual","Kesesuaian"].forEach(function(h,i){put(ws,3,2+i,2+i,h,{b:true,bd:true,fill:GREY,h:"center"})});
+ pc.forEach(function(o,i){var x=o.x,r=4+i;[i+1,o.project,x.job,x.pos,x.part,x.method,x.method=="Pad Print"&&x.proc?x.proc:"-",x.color,o.n,o.st,o.ta||"-",o.pa||"-",o.kes].forEach(function(a,j){put(ws,r,2+j,2+j,a,{bd:true,h:j==0||j==2||j==5||j==6||j==8||j==10?"center":"left"})});
+  ws.getCell(r,11).font={name:"Arial",size:10,bold:true,color:{argb:!o.l?"FF888888":o.ok?"FF1F9D63":"FFD6405A"}}})}
+
 function dl(name,data){var a=document.createElement("a"),u=URL.createObjectURL(new Blob([data],{type:"application/octet-stream"}));a.href=u;a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(u);a.remove()},500)}
 var SEC={completeness:{t:"Received Decoration Completeness",c:["Item Name","Received Date","Qty","Status","Remark"],d:["Reference Sample","Engineering Sample","SAS Sample","Deco Plan","Standard Operating Procedure (SOP)","Paint / Ink","Spray Mask","Pad Print Fixtures","Pad Print Plates","3D Design Fixtures","CAD file Artwork","Reference Plastic Part"].map(function(x){return [x]})},
 spray_tools:{t:"Spray First Set Tools Readiness",c:["Tools","Position","Copy Date","Qty","Status","Remark"],d:[]},
@@ -830,25 +913,25 @@ function secRows(p,s,k){var x=secs.filter(function(y){return y.project==p&&y.sta
  return src.map(function(r){var o=[];for(var i=0;i<n;i++)o.push(r[i]==null?"":String(r[i]));return o})}
 function rLab(force){var p=$("lp").value,s=$("ls").value,key=p+"|"+s;
  if(!p){$("labBox").innerHTML="<div class=sub>Buat project dulu di tab Project.</div>";return}
- if(force||key!=workKey){workKey=key;work={};Object.keys(SEC).forEach(function(k){work[k]=secRows(p,s,k)})}
- $("labBox").innerHTML=Object.keys(SEC).map(function(k){var S=SEC[k];return "<div class=gh>"+S.t+"</div><div class=\"ov stk\"><table><tr><th>No</th>"+S.c.map(function(c){return "<th>"+c+"</th>"}).join("")+"<th></th></tr>"+work[k].map(function(r,i){return "<tr><td data-l=No>"+(i+1)+"</td>"+r.map(function(v,j){return "<td data-l=\""+S.c[j]+"\"><input class=si data-k=\""+k+"\" data-i=\""+i+"\" data-j=\""+j+"\" value=\""+esc(v)+"\"></td>"}).join("")+"<td><button type=button class=chip data-del=\""+k+"|"+i+"\">✕</button></td></tr>"}).join("")+"</table></div><button type=button class=\"btn ghost small\" data-add=\""+k+"\">＋ Baris</button>"}).join("")}
+ if(force||key!=workKey){workKey=key;work={};Object.keys(SEC).forEach(function(k){work[k]=secRows(p,s,k)});var dx=secs.filter(function(y){return y.project==p&&y.stage==s&&y.section=="lab_docs"})[0];workDocs=dx?dx.rows.map(function(r){return r[0]}):[]}
+ rLabDocs();$("labBox").innerHTML=Object.keys(SEC).map(function(k){var S=SEC[k];return "<div class=gh>"+S.t+"</div><div class=\"ov stk\"><table><tr><th>No</th>"+S.c.map(function(c){return "<th>"+c+"</th>"}).join("")+"<th></th></tr>"+work[k].map(function(r,i){return "<tr><td data-l=No>"+(i+1)+"</td>"+r.map(function(v,j){return "<td data-l=\""+S.c[j]+"\"><input class=si"+(S.c[j]=="Result"?" list=resl":"")+" data-k=\""+k+"\" data-i=\""+i+"\" data-j=\""+j+"\" value=\""+esc(v)+"\"></td>"}).join("")+"<td><button type=button class=chip data-del=\""+k+"|"+i+"\">✕</button></td></tr>"}).join("")+"</table></div><button type=button class=\"btn ghost small\" data-add=\""+k+"\">＋ Baris</button>"}).join("")}
 $("labBox").addEventListener("input",function(e){var t=e.target;if(t.classList.contains("si"))work[t.dataset.k][+t.dataset.i][+t.dataset.j]=t.value});
 $("labBox").addEventListener("click",function(e){var t=e.target;if(t.dataset.add){work[t.dataset.add].push(SEC[t.dataset.add].c.map(function(){return ""}));rLab()}if(t.dataset.del){var a=t.dataset.del.split("|");work[a[0]].splice(+a[1],1);rLab()}});
 $("lp").onchange=$("ls").onchange=function(){rLab()};
 $("lreset").onclick=function(){rLab(true)};
 $("lsave").onclick=async function(){var p=$("lp").value,s=$("ls").value;if(!p)return toast("Pilih project dulu");
  var body=Object.keys(SEC).map(function(k){return {project:p,stage:s,section:k,rows:work[k].filter(function(r){return r.some(function(x){return x.trim()})}),ts:Date.now()}});
- try{await api("POST","sections",body,"?on_conflict=project,stage,section","resolution=merge-duplicates,return=minimal");last.s="";await loadS();toast("Kelengkapan & lab tersimpan ✓")}catch(e){toast("Gagal: "+e.message.slice(0,100))}};
+ try{var fl=$("labf").files;for(var i=0;i<fl.length;i++)workDocs.push(await upPhoto(fl[i]));$("labf").value="";rLabDocs();body.push({project:p,stage:s,section:"lab_docs",rows:workDocs.map(function(u){return [u]}),ts:Date.now()});await api("POST","sections",body,"?on_conflict=project,stage,section","resolution=merge-duplicates,return=minimal");last.s="";await loadS();toast("Kelengkapan & lab tersimpan ✓")}catch(e){toast("Gagal: "+e.message.slice(0,100))}};
 
 /* Impor */
 function cellText(v){if(v==null)return "";if(v instanceof Date)return v.toISOString().slice(0,10);if(typeof v=="object"){if(v.richText)return v.richText.map(function(x){return x.text}).join("").trim();if("result" in v)return cellText(v.result);if(v.text!=null)return String(v.text).trim();return ""}return String(v).trim()}
 function parseCSV(t){var R=[],r=[],c="",q=false;for(var i=0;i<t.length;i++){var ch=t[i];if(q){if(ch=="\""){if(t[i+1]=="\""){c+="\"";i++}else q=false}else c+=ch}else if(ch=="\""){q=true}else if(ch==","){r.push(c);c=""}else if(ch=="\n"||ch=="\r"){if(ch=="\r"&&t[i+1]=="\n")i++;r.push(c);c="";R.push(r);r=[]}else c+=ch}if(c!==""||r.length){r.push(c);R.push(r)}return R}
-var TH_=["Project","Waktu","Tahap","Metode","Part","Mesin","Qty","NG","Warna","Hasil","Kendala","Detail","Tindakan","Oleh","Parameter","Foto","Trial","Foto Mesin"];
+var TH_=["Project","Waktu","Tahap","Metode","Part","Mesin","Qty","NG","Warna","Hasil","Kendala","Detail","Tindakan","Oleh","Parameter","Foto","Trial","Foto Mesin","Warna Cat"];
 function isoLocal(ts){var d=new Date(ts),p=function(n){return String(n).padStart(2,"0")};return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate())+" "+p(d.getHours())+":"+p(d.getMinutes())}
-function trialRow(x){return [x.project,isoLocal(T(x)),x.stage,x.method,x.pos,x.mc,x.qty,x.ng,x.color,x.res,x.cat,x.issue,x.act,x.by,JSON.stringify(x.params||{}),(x.photos||[]).join(" "),x.no||1,JSON.stringify(x.mp||{})]}
+function trialRow(x){return [x.project,isoLocal(T(x)),x.stage,x.method,x.pos,x.mc,x.qty,x.ng,x.color,x.res,x.cat,x.issue,x.act,x.by,JSON.stringify(x.params||{}),(x.photos||[]).join(" "),x.no||1,JSON.stringify(x.mp||{}),x.paint||""]}
 function trialsFromRows(R){if(!R.length)return null;var h=R[0].map(function(x){return String(x||"").trim()}),ix={};TH_.forEach(function(k){ix[k]=h.indexOf(k)});if(ix.Project<0||ix.Waktu<0||ix.Part<0)return null;
  return R.slice(1).filter(function(r){return r[ix.Project]}).map(function(r){var g=function(k){return ix[k]<0?"":String(r[ix[k]]==null?"":r[ix[k]]).trim()},pr={};try{pr=JSON.parse(g("Parameter")||"{}")}catch(e){}
-  var t=new Date(g("Waktu").replace(" ","T")).getTime();return {ts:Date.now(),trialAt:isNaN(t)?Date.now():t,project:g("Project"),by:g("Oleh"),stage:g("Tahap")||"Trial Lain",method:g("Metode")||"Handspray",pos:g("Part"),mc:g("Mesin"),qty:Number(g("Qty"))||0,ng:Number(g("NG"))||0,color:g("Warna"),res:g("Hasil")||"Pass",params:pr,cat:g("Kendala"),issue:g("Detail"),act:g("Tindakan"),photos:g("Foto").split(/\s+/).filter(Boolean),no:Math.min(10,Math.max(1,Number(g("Trial"))||1)),mp:(function(){try{return JSON.parse(g("Foto Mesin")||"{}")}catch(e){return {}}})()}})}
+  var t=new Date(g("Waktu").replace(" ","T")).getTime();return {ts:Date.now(),trialAt:isNaN(t)?Date.now():t,project:g("Project"),by:g("Oleh"),stage:g("Tahap")||"Trial Lain",method:g("Metode")||"Handspray",pos:g("Part"),mc:g("Mesin"),qty:Number(g("Qty"))||0,ng:Number(g("NG"))||0,color:g("Warna"),res:g("Hasil")||"Pass",params:pr,cat:g("Kendala"),issue:g("Detail"),act:g("Tindakan"),photos:g("Foto").split(/\s+/).filter(Boolean),no:Math.min(10,Math.max(1,Number(g("Trial"))||1)),mp:(function(){try{return JSON.parse(g("Foto Mesin")||"{}")}catch(e){return {}}})(),paint:g("Warna Cat")}})}
 function normH(s){return s.toLowerCase().replace("methode","method").replace(/\s+/g," ").trim()}
 function scanSheet(ws){var sm=(ws.name||"").match(/\b(FEP|PP2K|PP3K|EP)\b/i);if(!sm)return null;var R=[];
  ws.eachRow({includeEmpty:false},function(row){var cs=[];row.eachCell({includeEmpty:false},function(c,cn){if(c.isMerged&&c.master&&c.master.address!==c.address)return;var t=cellText(c.value);if(t!=="")cs.push({c:cn,t:t})});if(cs.length)R.push(cs)});
@@ -898,7 +981,7 @@ function widths(ws,w){w.forEach(function(x,i){ws.getColumn(i+1).width=x})}
 function names(f,k){return Array.from(new Set(f.map(function(x){return x[k]}).filter(Boolean)))}
 function stageSheet(wb,proj,stage,f,sc){
  var ws=wb.addWorksheet(sname(wb,proj,stage),{views:[{showGridLines:false}],pageSetup:{orientation:"landscape",fitToPage:true,fitToWidth:1,fitToHeight:0}});
- widths(ws,[2.6,5,18,20,11,8,7,7,7,12,8,26,34,30,10]);
+ widths(ws,[2.6,5,18,20,11,8,7,7,7,20,8,26,34,30,10]);
  var qty=f.reduce(function(a,x){return a+x.qty},0),r=1;
  put(ws,r,2,10,proj,{b:true,sz:14});put(ws,r,11,12,"Piloting Date",{b:true,h:"right"});put(ws,r,13,15,": "+(f.length?day(Math.min.apply(null,f.map(T))):"-"),{});r++;
  put(ws,r,11,12,"Qty",{b:true,h:"right"});put(ws,r,13,15,": "+qty+" Pcs",{});r++;
@@ -911,6 +994,7 @@ function stageSheet(wb,proj,stage,f,sc){
  if(sc.completeness)tbl(SEC.completeness.t,SEC.completeness.c,sc.completeness,SP.completeness);
  if(f.length){var pm={};f.forEach(function(x){var k=x.method+"|"+x.pos;pm[k]=pm[k]||{m:x.method,p:x.pos,mc:[],n:0};pm[k].n++;if(x.mc&&pm[k].mc.indexOf(x.mc)<0)pm[k].mc.push(x.mc)});
   tbl("Decoration Method",["Part Name","Position","Plan","Actual","Remark"],Object.keys(pm).map(function(k){var o=pm[k];return [o.m,o.p,o.m,o.m,"Mesin "+(o.mc.join(", ")||"-")+" · "+o.n+" trial"]}),SP.method)}
+ if(stage=="PP2K"){var pl=planOf(proj);if(pl.length)tbl("Decoplan (Acuan Release PP2K)",["Position","Part","Metode","Tampo","Warna (Acuan)"],pl.sort(function(a,b){return (Number(a.job)||0)-(Number(b.job)||0)}).map(function(x){return ["J"+x.job+" · "+en(x.pos),en(x.part),x.method,x.method=="Pad Print"&&x.proc?x.proc+"×":"-",x.color]}),[[3,4],[5,9],[10,10],[11,11],[12,13]])}
  if(sc.spray_tools)tbl(SEC.spray_tools.t,SEC.spray_tools.c,sc.spray_tools,SP.tools);
  if(sc.pad_tools)tbl(SEC.pad_tools.t,SEC.pad_tools.c,sc.pad_tools,SP.tools);
  put(ws,r,2,15,"2. "+stage+" Parameters",{b:true});r++;
@@ -922,14 +1006,15 @@ function stageSheet(wb,proj,stage,f,sc){
   for(var s=0;s<parts.length;s+=4){var ch=parts.slice(s,s+4);
    put(ws,r,2,2,"No",{b:true,bd:true,fill:GREY,h:"center"});put(ws,r,3,4,"Item Name",{b:true,bd:true,fill:GREY});
    ch.forEach(function(p,i){put(ws,r,5+i*2,6+i*2,p,{b:true,bd:true,fill:GREY,h:"center"})});r++;
-   PAR[m].forEach(function(it,j){put(ws,r,2,2,j+1,{bd:true,h:"center"});put(ws,r,3,4,it,{bd:true});
-    ch.forEach(function(p,i){var xs=fm.filter(function(x){return x.pos==p&&x.params&&x.params[it]}).sort(function(a,b){return (b.res=="Pass")-(a.res=="Pass")||(b.no||1)-(a.no||1)||T(b)-T(a)});put(ws,r,5+i*2,6+i*2,xs.length?xs[0].params[it]:"",{bd:true,h:"center"})});r++});
+   ["Warna Cat"].concat(PAR[m]).forEach(function(it,j){put(ws,r,2,2,j+1,{bd:true,h:"center"});put(ws,r,3,4,it,{bd:true});
+    ch.forEach(function(p,i){var xs=fm.filter(function(x){return x.pos==p&&pval(x,it)}).sort(function(a,b){return (b.res=="Pass")-(a.res=="Pass")||(b.no||1)-(a.no||1)||T(b)-T(a)});put(ws,r,5+i*2,6+i*2,xs.length?pval(xs[0],it):"",{bd:true,h:"center"})});r++});
    r++}});
  put(ws,r,2,15,"3. "+stage+" Result",{b:true});r++;
  if(sc.lab)tbl(SEC.lab.t,SEC.lab.c,sc.lab,SP.lab);
+ if(sc.lab_docs&&sc.lab_docs.length){put(ws,r,2,15,"Foto Dokumen Lab: "+sc.lab_docs.length+" file (lihat sheet Lab Docs)",{});r+=2}
  if(f.length){tbl("Summary Hasil Trial per Part",["Part","Metode","Jml Trial","Riwayat Trial","Hasil Akhir","Trial OK ke-","Tanggal OK"],progress(f).map(function(o){return [o.pos,o.method,o.n,o.hist,o.final,o.ok?"T"+(o.ok.no||1):"-",o.ok?day(T(o.ok)):"-"]}),[[3,4],[5,5],[6,7],[8,12],[13,13],[14,14],[15,15]]);put(ws,r,2,15,"Trial Result",{b:true});r++;
-  ["No","Tanggal & Jam","Part","Metode","Mesin","Qty","NG","NG %","Warna","Hasil","Kendala","Detail Kendala","Tindakan","Oleh"].forEach(function(h,i){put(ws,r,2+i,2+i,h,{b:true,bd:true,fill:GREY,h:"center"})});r++;
-  f.slice().sort(function(a,b){return T(a)-T(b)}).forEach(function(x,i){var v=[i+1,fmt(T(x)),x.pos+" · T"+(x.no||1),x.method,x.mc,x.qty,x.ng,x.qty?+(x.ng/x.qty*100).toFixed(1):0,x.color||"",x.res,(x.cat&&x.cat!="Tidak ada kendala")?x.cat:"-",x.issue,x.act,x.by];
+  ["No","Tanggal & Jam","Part","Metode","Mesin","Qty","NG","NG %","Warna Cat · Hasil","Hasil","Kendala","Detail Kendala","Tindakan","Oleh"].forEach(function(h,i){put(ws,r,2+i,2+i,h,{b:true,bd:true,fill:GREY,h:"center"})});r++;
+  f.slice().sort(function(a,b){return T(a)-T(b)}).forEach(function(x,i){var v=[i+1,fmt(T(x)),x.pos+" · T"+(x.no||1),x.method,x.mc,x.qty,x.ng,x.qty?+(x.ng/x.qty*100).toFixed(1):0,(x.paint?x.paint+" · ":"")+(x.color||""),x.res,(x.cat&&x.cat!="Tidak ada kendala")?x.cat:"-",x.issue,x.act,x.by];
    v.forEach(function(a,j){put(ws,r,2+j,2+j,a,{bd:true,h:j>=5&&j<=9||j==0?"center":"left"})});
    ws.getCell(r,11).font={name:"Arial",size:10,bold:true,color:{argb:x.res=="Pass"?"FF1F9D63":x.res=="Fail"?"FFD6405A":"FFC58A10"}};r++});r++;
   put(ws,r,2,15,"Problem Summary",{b:true});r++;
@@ -951,11 +1036,11 @@ async function attachSheet(wb,proj,f){var ph=f.filter(function(x){return CAT.som
      try{var im=await imgBuf(it.u),sc=Math.min(170/im.w,140/im.h),id=wb.addImage({buffer:im.buf,extension:"jpeg"});ws.addImage(id,{tl:{col:1+j+.05,row:r-1+.05},ext:{width:im.w*sc,height:im.h*sc}})}catch(e){put(ws,r,2+j,2+j,it.u,{sz:8})}}
     r+=2}}
   r++}}
-function fillSummary(sm,f){var pg=progress(f);widths(sm,[2.6,5,22,9,12,22,9,38,12,9,12,10,7,7,12,32,48,10,24]);
+function fillSummary(sm,f){var pg=progress(f);widths(sm,[2.6,5,22,9,12,22,9,38,12,9,12,10,7,7,20,32,48,10,24]);
  put(sm,1,2,10,"Summary Hasil Trial per Part (trial awal sampai OK)",{b:true,sz:13,fill:BLUE});
- ["No","Project","Tahap","Metode","Part","Jml Trial","Riwayat Trial","Hasil Akhir","Trial OK ke-","Tanggal OK","Mesin OK","Qty OK","NG OK","Warna OK","Kendala sebelum OK","Parameter OK","Oleh","Foto OK (Produk/HMI/Speed/Angin/Proses)"].forEach(function(h,i){put(sm,3,2+i,2+i,h,{b:true,bd:true,fill:GREY,h:"center"})});
+ ["No","Project","Tahap","Metode","Part","Jml Trial","Riwayat Trial","Hasil Akhir","Trial OK ke-","Tanggal OK","Mesin OK","Qty OK","NG OK","Warna Cat · Hasil OK","Kendala sebelum OK","Parameter OK","Oleh","Foto OK (Produk/HMI/Speed/Angin/Proses)"].forEach(function(h,i){put(sm,3,2+i,2+i,h,{b:true,bd:true,fill:GREY,h:"center"})});
  pg.forEach(function(o,i){var ok=o.ok,r=4+i,kd=Array.from(new Set(o.t.filter(function(x){return x.res!="Pass"&&x.cat&&x.cat!="Tidak ada kendala"}).map(function(x){return "T"+(x.no||1)+": "+x.cat}))).join("; ");
-  var v=[i+1,o.project,o.stage,o.method,o.pos,o.n,o.hist,o.final,ok?"T"+(ok.no||1):"-",ok?day(T(ok)):"-",ok?ok.mc:"",ok?ok.qty:"",ok?ok.ng:"",ok?ok.color||"":"",kd||"-",ok?Object.keys(ok.params||{}).map(function(k){return k+": "+ok.params[k]}).join("; "):"",ok?ok.by:o.t[o.t.length-1].by,ok?CAT.map(function(c){return photosOf(ok,c[0]).length}).join(" / "):"-"];
+  var v=[i+1,o.project,o.stage,o.method,o.pos,o.n,o.hist,o.final,ok?"T"+(ok.no||1):"-",ok?day(T(ok)):"-",ok?ok.mc:"",ok?ok.qty:"",ok?ok.ng:"",ok?(ok.paint?ok.paint+" · ":"")+(ok.color||""):"",kd||"-",ok?Object.keys(ok.params||{}).map(function(k){return k+": "+ok.params[k]}).join("; "):"",ok?ok.by:o.t[o.t.length-1].by,ok?CAT.map(function(c){return photosOf(ok,c[0]).length}).join(" / "):"-"];
   v.forEach(function(a,j){put(sm,r,2+j,2+j,a,{bd:true,h:j==0||j==5||j>=8&&j<=12?"center":"left"})});
   sm.getCell(r,9).font={name:"Arial",size:10,bold:true,color:{argb:ok?"FF1F9D63":"FFD6405A"}}})}
 async function buildReport(f,fname,b){if(!f.length)return toast("Tidak ada data untuk diekspor");var lbl=b.textContent;b.disabled=true;b.textContent="Menyiapkan…";
@@ -968,12 +1053,12 @@ async function buildReport(f,fname,b){if(!f.length)return toast("Tidak ada data 
   put(cv,7,2,2,"Total trial",{b:true});put(cv,7,3,3,":");put(cv,7,4,8,f.length+" trial");
   put(cv,10,2,2,"Prepared by",{b:true,bd:true,fill:GREY,h:"center"});put(cv,10,4,8,"Approved by",{b:true,bd:true,fill:GREY,h:"center"});
   put(cv,11,2,2,"ME",{bd:true,h:"center"});["Engineering Director","Production","Production","QA","Production Director"].forEach(function(t,i){put(cv,11,4+i,4+i,t,{bd:true,h:"center"})});
-  cv.getRow(11).height=80;[2,4,5,6,7,8].forEach(function(ci){cv.getCell(11,ci).alignment={vertical:"bottom",horizontal:"center",wrapText:true}});var sm=wb.addWorksheet("Summary Trial",{views:[{showGridLines:false}]}),jr=wb.addWorksheet("Jadwal & Release",{views:[{showGridLines:false}]});
+  cv.getRow(11).height=80;[2,4,5,6,7,8].forEach(function(ci){cv.getCell(11,ci).alignment={vertical:"bottom",horizontal:"center",wrapText:true}});var sm=wb.addWorksheet("Summary Trial",{views:[{showGridLines:false}]}),jr=wb.addWorksheet("Jadwal & Release",{views:[{showGridLines:false}]});var pcs=planCmp(pr),dp=pcs.length?wb.addWorksheet("Decoplan (Acuan)",{views:[{showGridLines:false}]}):null;
   for(var p of pr){var fp=f.filter(function(x){return (x.project||"-")==p});
    for(var s of STAGES){var fs=fp.filter(function(x){return x.stage==s}),sc={};secs.filter(function(y){return y.project==p&&y.stage==s}).forEach(function(y){sc[y.section]=y.rows});
     if(fs.length||Object.keys(sc).length)stageSheet(wb,p,s,fs,sc)}
-   await attachSheet(wb,p,fp)}
-  fillSummary(sm,f);fillSchedule(jr,pr);var dt=wb.addWorksheet("Data Trial");dt.addRow(TH_);f.slice().sort(function(a,b){return T(a)-T(b)}).forEach(function(x){dt.addRow(trialRow(x))});dt.getRow(1).font={bold:true};widths(dt,TH_.map(function(){return 18}));
+   await attachSheet(wb,p,fp);await labDocSheet(wb,p)}
+  fillSummary(sm,f);fillSchedule(jr,pr);if(dp)fillPlan(dp,pcs);var dt=wb.addWorksheet("Data Trial");dt.addRow(TH_);f.slice().sort(function(a,b){return T(a)-T(b)}).forEach(function(x){dt.addRow(trialRow(x))});dt.getRow(1).font={bold:true};widths(dt,TH_.map(function(){return 18}));
   dl(fname,await wb.xlsx.writeBuffer());toast("Excel dibuat")}catch(e){toast("Gagal ekspor: "+e.message)}
  b.disabled=false;b.textContent=lbl}
 $("xl").onclick=function(){buildReport(filtered(),"Trial_Report_ME.xlsx",$("xl"))};
@@ -993,14 +1078,14 @@ async function meetingReport(d,b){if(!d)return toast("Pilih tanggal dulu");
  var f=rows.filter(function(x){return iso(T(x))==d}).sort(function(a,b){return T(a)-T(b)});if(!f.length)return toast("Tidak ada trial pada "+day(d));
  var lbl=b.textContent;b.disabled=true;b.textContent="Menyiapkan…";
  try{var wb=new ExcelJS.Workbook(),ws=wb.addWorksheet("Meeting "+d,{views:[{showGridLines:false}],pageSetup:{orientation:"landscape",fitToPage:true,fitToWidth:1,fitToHeight:0}});
-  widths(ws,[2.6,5,22,11,22,7,9,8,7,7,12,26,34,30,10]);
+  widths(ws,[2.6,5,22,11,22,7,9,8,7,7,20,26,34,30,10]);
   var c=function(x){return f.filter(function(y){return y.res==x}).length},q=f.reduce(function(a,x){return a+x.qty},0),n=f.reduce(function(a,x){return a+x.ng},0),pr=Array.from(new Set(f.map(function(x){return x.project||"-"}))),r=1;
   put(ws,r,2,15,"Summary Meeting Trial – "+day(d),{b:true,sz:14,fill:BLUE});r++;
   put(ws,r,2,15,"Total "+f.length+" trial · Pass "+c("Pass")+" · Fail "+c("Fail")+" · Hold "+c("Hold")+" · NG rate "+(q?(n/q*100).toFixed(1):"0")+"% ("+n+"/"+q+" pcs) · "+pr.length+" project · PIC: "+names(f,"by").join(", "),{});r+=2;
   put(ws,r,2,15,"1. Hasil Trial per Project",{b:true});r++;
-  var SP1=[[3,3],[4,5],[6,6],[7,7],[8,8],[9,9],[10,10],[11,11],[12,12],[13,13],[14,14],[15,15]],H1=["Metode","Part","Trial","Jam","Hasil","Qty","NG","Warna","Kendala","Detail Kendala","Tindakan","Oleh"];
+  var SP1=[[3,3],[4,5],[6,6],[7,7],[8,8],[9,9],[10,10],[11,11],[12,12],[13,13],[14,14],[15,15]],H1=["Metode","Part","Trial","Jam","Hasil","Qty","NG","Warna Cat · Hasil","Kendala","Detail Kendala","Tindakan","Oleh"];
   pr.forEach(function(p){var fp=f.filter(function(x){return (x.project||"-")==p});put(ws,r,2,15,"Project: "+p+"  ("+fp.length+" trial)",{b:true,fill:GREY});r++;
-   r=gtbl(ws,r,"",H1,fp.map(function(x){return [x.method,x.pos,"T"+(x.no||1),new Date(T(x)).toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"}),x.res,x.qty,x.ng,x.color||"",(x.cat&&x.cat!="Tidak ada kendala")?x.cat:"-",x.issue,x.act,x.by]}),SP1)});
+   r=gtbl(ws,r,"",H1,fp.map(function(x){return [x.method,x.pos,"T"+(x.no||1),new Date(T(x)).toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"}),x.res,x.qty,x.ng,(x.paint?x.paint+" · ":"")+(x.color||""),(x.cat&&x.cat!="Tidak ada kendala")?x.cat:"-",x.issue,x.act,x.by]}),SP1)});
   var keys={};f.forEach(function(x){keys[[x.project,x.stage,x.method,x.pos].join("|")]=1});
   var pg=progress(rows.filter(function(x){return pr.indexOf(x.project||"-")>=0})).filter(function(o){return keys[[o.project,o.stage,o.method,o.pos].join("|")]});
   r=gtbl(ws,r,"2. Status Part Terkini & Tindak Lanjut",["Project","Metode","Part","Trial hari ini","Riwayat Trial","Status Sekarang","Tindak Lanjut"],pg.map(function(o){var last=o.t[o.t.length-1],lc=last.cat&&last.cat!="Tidak ada kendala"?last.cat:"",tn=f.filter(function(x){return x.project==o.project&&x.stage==o.stage&&x.method==o.method&&x.pos==o.pos}).map(function(x){return "T"+(x.no||1)}).join(", ");
